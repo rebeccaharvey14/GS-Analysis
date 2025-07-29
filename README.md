@@ -1,28 +1,31 @@
 # GS-Analysis
-Flux rope detection from Grad-Shafranov reconstruction
+## Flux rope detection from Grad-Shafranov reconstruction ##
 
-## contains: ##
+### Utilizes adaptive inputs for time range *[start, end]*, time cadence *dt*, and probe name ###
 
 **download_preprocess.sh**
-*downloads data using pySPEDAS and preprocesses data from FGM, FPI, ESA instrument*
-- p2_MMS.py -- fast survey data for plasma & magnetic field data
-- data_THM_v2.py -- fast survey data for plasma & magnetic field data
-- data_THM_v3.py -- fast survey data for magnetic field data, some plasma data; slow survey data for velocity(+interpolation)
-- NOTE: use data_THM_v3.py when velocity data has significant gaps
+*downloads data using [pySPEDAS](https://github.com/spedas/pyspedas) and preprocesses data into a DataFrame*
+- data_MMS.py -- fast survey plasma & magnetic field data
+- data_THM.py -- fast survey (when available) plasma & fast survey magnetic field data; slow survey plasma velocity data interpolated + upsampled when fast survey data is unavailable
 
 **detection.sh**
-- GS_detection.py -- detection step called by search windows
-- Detection/*.sh -- original detection search windows (from Y. Chen)
-- Detection/detection_higher*.sh -- higher duration search windows (my addition)
+- GS_detection.pySPEDAS			 -- detection step called by search windows; utilizes extended-GS equation
+- Detection/*.sh 				 -- original detection search windows (from Y. Chen)
+- Detection/detection_higher*.sh -- higher duration search windows (from R. Harvey)
 
 **postprocess.sh**
-- 1_combine_raw_result_to_single_file.py -- combines all detection result files
-- 2_combineDuplicatedEvent.py -- removes slotting step and uses residuals step as first criteria for event list
-- 3_getMoreFluxRopeInfo.py -- gets more detailed info on events
-- 4_walen_test.py -- adds more criteria: wait time, shock label, turnTime HCS, days to Exhaust
-- 5_WEB_generate_html_form.py -- gets everything in web format; produces csv of event list
-- 6_WEB_plotFluxRopeCandidate.py -- plots time series and hodograms of flux rope events
-- Output_jz.py -- outputs histogram of axial current density jz
+*combines and post-process event candidate lists for one time range*
+- 1_combine_raw_results.py 	  -- combines all raw detection files
+- 2_combineDuplicatedEvent.py -- eliminates duplicate events, enacts residual criteria, cleans event candidate list
+- 3_getMoreFluxRopeInfo.py 	  -- gets more detailed info on identified events
+- 4_walen_test.py 			  -- adds more criteria: wait time, shock label, turnTime HCS, days to Exhaust
+- 5_generate_csv.py 		  -- produces csv of event list and associated parameters; runs concurrently with 5_generate_html.py
+- 5_generate_html.py 		  -- puts everything in web html format; runs concurrently with 5_generate_csv.py
+- 6_plotFluxRopeCandidate.py  -- plots time series and hodograms of flux rope events
+- 7_event_page_html.py 		  --
+- output_jz.py 				  -- outputs histogram of axial current density *j~z*
+- curve_fit_Jz_B_5nT.py       --
 
-**FluxRopeDetectionPackage**
-- fluxrope -- my version of fluxrope.py modified for magnetosheath data ("updated" refers to adaptive datetimeStart(&End), dt inputs)
+**fluxrope.py**
+*R. Harvey's version of fluxrope.py modified for magnetosheath data*
+- miscellaneous functions used in detection and postprocessing

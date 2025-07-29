@@ -31,10 +31,10 @@ global m_proton         # Proton mass [kg]
 global factor_deg2rad   # Convert degree to radians
 global k_Boltzmann      # Boltzmann constant, in J/K.
 
-mu0 = 4.0 * np.pi * 1e-7
-m_proton = 1.6726219e-27 # kg
+mu0 = 4.0 * np.pi * 1e-7     # (N/A^2)
+m_proton = 1.6726219e-27     # kg
 factor_deg2rad = np.pi/180.0 # radians
-k_Boltzmann = 1.3806488e-23 # J/K.
+k_Boltzmann = 1.3806488e-23  # J/K
 #############################################################################################################
 
 # Calculate the velocity of deHoffmann-Teller frame, VHT.
@@ -112,7 +112,7 @@ def eigenMatrix(matrix_DataFrame, **kwargs):
     # return eigenValues, eigenMatrix
     return lambda1, lambda2, lambda3, eigenVectorMaxVar_lambda1, eigenVectorInterVar_lambda2, eigenVectorMinVar_lambda3
 
-################################################################################################################
+#############################################################################################################
 
 # Find X axis according to Z axis and V. The X axis is the projection of V on the plane perpendicular to Z axis.
 # For this function, numba is slower than python.
@@ -142,10 +142,10 @@ def formRightHandFrame(X, Z): # Z cross X = Y in right hand frame.
     X = np.array(X)
     Z = np.array(Z)
     Y = np.cross(Z, X)
-    Y = Y/(la.norm(Y)) # Normalize.
+    Y = Y/(la.norm(Y))
     return Y
 
-################################################################################################################
+#############################################################################################################
 
 # Find how many turning points in an array.
 def turningPoints(array):
@@ -154,7 +154,7 @@ def turningPoints(array):
     dx = dx[dx != 0] # if don't remove duplicate points, will miss the turning points with duplicate values.
     return np.sum(dx[1:] * dx[:-1] < 0)
 
-################################################################################################################
+#############################################################################################################
 
 # Usage: B_inFR = B_inGSE.dot(matrix_transToFluxRopeFrame)
 def angle2matrix(theta_deg, phi_deg, VHT_inGSE):
@@ -176,7 +176,7 @@ def angle2matrix(theta_deg, phi_deg, VHT_inGSE):
     matrix_transToFluxRopeFrame = np.array([X_unitVector, Y_unitVector, Z_unitVector]).T
     return matrix_transToFluxRopeFrame
 
-################################################################################################################
+#############################################################################################################
 
 def directionVector2angle(V):
     Z = np.array([0,0,1])
@@ -190,7 +190,7 @@ def directionVector2angle(V):
         phi_deg = 360 - phi_deg
     return (theta_deg, phi_deg)
     
-################################################################################################################
+#############################################################################################################
 
 def angle2directionVector(theta_deg, phi_deg):
     factor_deg2rad = np.pi/180.0
@@ -201,7 +201,7 @@ def angle2directionVector(theta_deg, phi_deg):
     Z_unitVector = np.array([np.sin(theta_rad)*np.cos(phi_rad), np.sin(theta_rad)*np.sin(phi_rad), np.cos(theta_rad)])
     return Z_unitVector
     
-################################################################################################################
+#############################################################################################################
 
 def flip_direction(theta_deg, phi_deg):
     new_theta_deg = 180 - theta_deg
@@ -210,7 +210,7 @@ def flip_direction(theta_deg, phi_deg):
         new_phi_deg -= 360
     return (new_theta_deg, new_phi_deg)
 
-################################################################################################################
+#############################################################################################################
 
 # Walen test. Find the correlation coefficient and slop between the remainning velocity and Alfven speed. This function return the component-by-component correlation coefficient and slope of the plasma velocities and the Alfven velocities.
 def walenTest(VA, V_remaining):
@@ -218,19 +218,18 @@ def walenTest(VA, V_remaining):
     VA = np.array(VA)                                       # VA is the reshaped time series of Alfven wave [km/s].
     mask = ~np.isnan(VA) & ~np.isnan(V_remaining)
     if mask.sum()>=5:
-        # slope, intercept, r_value, p_value, std_err = stats.linregress(A,B)
-        # scipy.stats.linregress(x, y=None). Put VA on X-axis, V_remaining on Y-axis.
+        # Put VA on X-axis, V_remaining on Y-axis.
         slope, intercept, r_value, p_value, std_err = stats.linregress(VA[mask], V_remaining[mask])
         return slope, intercept, r_value
     else:
         return np.nan, np.nan, np.nan
 
-################################################################################################################
+#############################################################################################################
 
 # Loop for all directions to calculate residue, return the smallest residue and corresponding direction.
 def searchFluxRopeInWindow(B_DataFrame, VHT, n_theta_grid, minDuration, dt, flag_smoothA, Np_DataFrame, Tp_DataFrame, Vsw_DataFrame):
     print('{} - [{}~{} minutes] searching: ({} ~ {})'.format(time.ctime(), minDuration, len(B_DataFrame), B_DataFrame.index[0], B_DataFrame.index[-1]))
-    
+
     # Initialization. Caution: the type of return value will be different if the initial data is updated. If updated, timeRange_temp will become to tuple, plotData_dict_temp will becomes to dict, et, al.
     time_start_temp     = np.nan
     time_end_temp       = np.nan
@@ -241,10 +240,10 @@ def searchFluxRopeInWindow(B_DataFrame, VHT, n_theta_grid, minDuration, dt, flag
     duration_temp       = np.nan
     theta_temp          = np.nan
     phi_temp            = np.nan
-    Tp_in_temp          = np.nan
-    Np_in_temp          = np.nan
+    # Tp_in_temp          = np.nan
+    # Np_in_temp          = np.nan
     time_start, time_end, time_turn, turnPointOnTop, Residue_diff, Residue_fit, duration = getResidueForCurrentAxial(0, 0, minDuration, B_DataFrame, VHT, dt, flag_smoothA, Np_DataFrame, Tp_DataFrame, Vsw_DataFrame)
-    print('For current orientation, the returned residue is {}'.format(Residue))
+    print('For current orientation, the returned residue is {}'.format(Residue_diff))
     print('For current orientation, the returned duration is {}'.format(duration))
     if  Residue_diff < Residue_diff_temp:
         time_start_temp     = time_start
@@ -256,8 +255,8 @@ def searchFluxRopeInWindow(B_DataFrame, VHT, n_theta_grid, minDuration, dt, flag
         theta_temp          = 0
         phi_temp            = 0
         duration_temp       = duration
-        Tp_in_temp          = Tp_in
-        Np_in_temp          = Np_in
+        # Tp_in_temp          = Tp_in
+        # Np_in_temp          = Np_in
     
     # This step loops all theta and phi except for theta = 0.
     thetaArray = np.linspace(0, 90, n_theta_grid+1)
@@ -277,14 +276,14 @@ def searchFluxRopeInWindow(B_DataFrame, VHT, n_theta_grid, minDuration, dt, flag
                 theta_temp          = theta_deg
                 phi_temp            = phi_deg
                 duration_temp       = duration
-               Tp_in_temp           = Tp_in
-               Np_in_temp           = Np_in
+                # Tp_in_temp          = Tp_in
+                # Np_in_temp          = Np_in
 
     print('Residue_diff = {}'.format(Residue_diff_temp))
     print('Residue_fit  = {}\n'.format(Residue_fit_temp))
     return time_start_temp, time_turn_temp, time_end_temp, duration_temp, turnPointOnTop_temp, Residue_diff_temp, Residue_fit_temp, (theta_temp, phi_temp), (round(VHT[0],5),round(VHT[1],5),round(VHT[2],5))
 
-################################################################################################################
+#############################################################################################################
 
 # Calculate the residue for given theta and phi.
 def getResidueForCurrentAxial(theta_deg, phi_deg, minDuration, B_DataFrame, VHT, dt, flag_smoothA, Np_DataFrame, Tp_DataFrame, Vsw_DataFrame):
@@ -320,7 +319,7 @@ def getResidueForCurrentAxial(theta_deg, phi_deg, minDuration, B_DataFrame, VHT,
     ########################################
     Vsw_inTrialframe = Vsw_DataFrame.dot(transToTrialFrame)
     V_remaining = np.array(Vsw_inTrialframe - VHT_inTrialframe)
-    P_massDensity = Np_DataFrame['Np'] * m_proton * 1e6 # [kg/m^3]
+    P_massDensity = Np_DataFrame * m_proton * 1e6 # [kg/m^3]
     len_P_massDensity = len(P_massDensity)
     P_massDensity_array = np.array(P_massDensity)
     P_massDensity_array = np.reshape(P_massDensity_array, (len_P_massDensity, 1))
@@ -329,16 +328,15 @@ def getResidueForCurrentAxial(theta_deg, phi_deg, minDuration, B_DataFrame, VHT,
     a = (Mach.mean())**2     
     B_norm_DF = pd.DataFrame(np.sqrt(np.square(B_DataFrame).sum(axis=1)),columns=['|B|'])
 
-    # Calculate A(x,0) by integrating By. A(x,0) = Integrate[-By(s,0)ds, {s, 0, x}], where ds = -Vht dot unit(X) dt.
-    # Don't forget to convert km/s to m/s, and convert nT to T.
-    # By = B_inTrialframe_DataFrame[1]
-    # A = integrate.cumtrapz(-B_inTrialframe_DataFrame[1]*1e-9, dx=ds, initial=0)
+    # Calculate A(x,0) by integrating By. A(x,0) = Integrate[-By(s,0)ds, {s, 0, x}], where ds = -Vht dot unit(X) dt. Don't forget to convert km/s to m/s, and convert nT to T.
+        # By = B_inTrialframe_DataFrame[1]
+        # A = integrate.cumtrapz(-B_inTrialframe_DataFrame[1]*1e-9, dx=ds, initial=0)
     ds = - VHT_inTrialframe[0] * 1000.0 * dt # Space increment along X axis. Convert km/s to m/s.
     A = integrate.cumtrapz(-(1-a)*B_inTrialframe_DataFrame[1]*1e-9, dx=ds, initial=0)
 
     # Calculate Pt(x,0). Pt(x,0)=p(x,0)+Bz^2/(2mu0)
     # By = B_inTrialframe_DataFrame[2]
-    Pp1 = np.array(Np_DataFrame['Np']) * 1e6 * 1.3806488e-23 * 1e9 * np.array(Tp_DataFrame['Tp'])
+    Pp1 = np.array(Np_DataFrame) * 1e6 * 1.3806488e-23 * 1e9 * np.array(Tp_DataFrame)
     Pb1 = np.array((B_inTrialframe_DataFrame[2] * 1e-9)**2 / (2.0*mu0) * 1e9)   # 1e9 convert unit form pa to npa. 
     PB1 = np.array((B_norm_DF['|B|'] * 1e-9)**2 / (2.0*mu0) * 1e9)              # 1e9 convert unit form pa to npa. 
     Pt = ((1-a)**2)*Pb1 + (1-a)*Pp1 + (a*(1-a))*PB1
@@ -350,8 +348,7 @@ def getResidueForCurrentAxial(theta_deg, phi_deg, minDuration, B_DataFrame, VHT,
     
     # Smooth A series to find the number of the turning point in main trend.
     if flag_smoothA == True:
-        # Because the small scale turning points are not important, we only use A_smoothed to find turning points. When fitting Pt with A, original A is used.
-        # Firstly, downsample A to 20 points, then apply savgol_filter, then upsample to original data points number.
+        # Because the small scale turning points are not important, we only use A_smoothed to find turning points. When fitting Pt with A, original A is used. Firstly, downsample A to 20 points, then apply savgol_filter, then upsample to original data points number.
         index_A = range(len(A))
         index_downsample = np.linspace(index_A[0],index_A[-1], 20)
         A_downsample = np.interp(index_downsample, index_A, A)          # Downsample A to 20 points.
@@ -419,7 +416,7 @@ def getResidueForCurrentAxial(theta_deg, phi_deg, minDuration, B_DataFrame, VHT,
     Pt_vs_A_sub2_DataFrame.sort_index(ascending=True, inplace=True, kind='quicksort')
     
     # Trim two branches to get same boundary A value.
-    # Note that, triming is by A value, not by lenght. After trimming, two branches may have different lengths.
+    # Note that, triming is by A value, not by length. After trimming, two branches may have different lengths.
     A_sub1_boundary_left  = Pt_vs_A_sub1_DataFrame.index.min()
     A_sub1_boundary_right = Pt_vs_A_sub1_DataFrame.index.max()
     A_sub2_boundary_left  = Pt_vs_A_sub2_DataFrame.index.min()
@@ -434,10 +431,11 @@ def getResidueForCurrentAxial(theta_deg, phi_deg, minDuration, B_DataFrame, VHT,
     # Get the time range of trimmed A.
     timeStamp_start = min(Pt_vs_A_sub1_trimmed_DataFrame['timeStamp_sub1'].min(skipna=True), Pt_vs_A_sub2_trimmed_DataFrame['timeStamp_sub2'].min(skipna=True))
     timeStamp_end   = max(Pt_vs_A_sub1_trimmed_DataFrame['timeStamp_sub1'].max(skipna=True), Pt_vs_A_sub2_trimmed_DataFrame['timeStamp_sub2'].max(skipna=True))
-    time_start      = int(timeStamp_start.strftime('%Y%m%d%H%M%S'))
-    time_end        = int(timeStamp_end.strftime('%Y%m%d%H%M%S'))
-    time_turn       = int(timeStamp_turnPoint.strftime('%Y%m%d%H%M%S'))
-    duration        = int((timeStamp_end - timeStamp_start).total_seconds()/sys.argv[2])+1 #dt=sys.argv[2] for detection codes
+    time_start      = timeStamp_start
+    time_end        = timeStamp_end
+    time_turn       = timeStamp_turnPoint
+    duration        = (datetime.strptime(timeStamp_end,'%Y-%m-%d %H:%M:%S.%f') - datetime.strptime(timeStamp_start,'%Y-%m-%d %H:%M:%S.%f')).total_seconds()/dt+1
+    print(duration)
     
     # Skip if shorter than minDuration.
     if duration < minDuration:
@@ -501,7 +499,7 @@ def getResidueForCurrentAxial(theta_deg, phi_deg, minDuration, B_DataFrame, VHT,
     
     return time_start, time_end, time_turn, turnPointOnTop, Residue_diff, Residue_fit, duration
         
-################################################################################################################  
+#############################################################################################################  
         
 # Calculate r_VHT (correlation coefficient of EHT and E).
 def calculate_r_VHT(data_DF, fluxRopeList_DF):
@@ -535,9 +533,9 @@ def calculate_r_VHT(data_DF, fluxRopeList_DF):
     fluxRopeList_with_r_VHT_DF['r_VHT'].plot.hist(bins=100)
     plt.show()
 
-################################################################################################################
+#############################################################################################################
 
-# Clean up raw_result.
+# Clean up raw_results
 def clean_up_raw_result(data_DF, dataObject_or_dataPath, **kwargs):
     # Check input datatype
     if isinstance(dataObject_or_dataPath, dict):
@@ -551,8 +549,8 @@ def clean_up_raw_result(data_DF, dataObject_or_dataPath, **kwargs):
         return None
 
     # Set default values.
-    dt = float(sys.argv[3]) # seconds
-    turnTime_tolerance  = 5*dt
+    dt = float(sys.argv[3])     # seconds
+    turnTime_tolerance  = 5*dt  # seconds
     min_residue_diff    = 0.2
     min_residue_fit     = 0.2
 
@@ -560,15 +558,15 @@ def clean_up_raw_result(data_DF, dataObject_or_dataPath, **kwargs):
     max_tailPercentile = 0.3
     max_tailDiff       = 0.3
     max_PtFitStd       = 0.3
-    Vsw_std_threshold  = 10000  # Max allowed standard deviation for solar wind speed.
-    Vsw_diff_threshold = 10000 # Max allowed solar wind max-min difference.
+    Vsw_std_threshold  = 10000 # Max allowed standard deviation for solar wind speed
+    Vsw_diff_threshold = 10000 # Max allowed solar wind max-min difference
 
     # Remove discontinuity.
     isRemoveShock = False
     
     # Walen test.
-    walenTest_r_threshold = 0.8 # correlation coefficient.
-    walenTest_k_threshold = 0.3 # slope.
+    walenTest_r_threshold = 0.8 # correlation coefficient
+    walenTest_k_threshold = 0.3 # slope
    
     # Display control.
     isVerbose = False
@@ -667,9 +665,6 @@ def clean_up_raw_result(data_DF, dataObject_or_dataPath, **kwargs):
         pd.set_option('display.max_columns', 500)
         pd.set_option('display.width', 500)
 
-    year_str = output_filename[:4]
-    residue_str = f'{min_residue_diff}_{min_residue_fit}'
-
     # Get duration list.
     duration_list = search_result_raw['true'].keys()
     window_size_list = []
@@ -680,18 +675,16 @@ def clean_up_raw_result(data_DF, dataObject_or_dataPath, **kwargs):
     # Sort the duration_list with window_size_list by argsort: the duration is in descending order.
     sorted_index_window_size_array = np.argsort(window_size_list)
     sorted_index_window_size_array = sorted_index_window_size_array[::-1]
-    duration_array = np.array(list(duration_list))
-    duration_list = list(duration_array)
+    duration_array   = np.array(list(duration_list))
+    duration_list    = list(duration_array)
     search_iteration = len(duration_list)
 
     # Get start and end time.
     datetimeStart = search_result_raw['timeRange']['datetimeStart']
-    datetimeEnd = search_result_raw['timeRange']['datetimeEnd']
+    datetimeEnd   = search_result_raw['timeRange']['datetimeEnd']
 
     # Create empty eventList_no_overlap DataFrame, the cleaned lists will be appended to it.
-    eventList_DF_noOverlap = pd.DataFrame(columns=['startTime', 'turnTime', 'endTime', 'duration', 'residue_diff', 'residue_fit', 'theta_phi', 'VHT', 'reduced_residue'])
-    # Create empty progressionList for each duration so that the progression of events can be recorded
-    progressionList = pd.DataFrame(columns=['beforeSlots','residuals', 'same_turnTime', 'turnTime<5pts']) #, 'walenTest', 'fluctuations', 'turnTime<5min', 'fineFittingCurve', 'slots', 'noOverlap'
+    eventList_noOverlap = pd.DataFrame(columns=['startTime', 'turnTime', 'endTime', 'duration', 'residue_diff', 'residue_fit', 'theta_phi', 'VHT', 'reduced_residue'])
 
     for i_iteration in range(search_iteration):
         print('\n======================================================================')
@@ -709,77 +702,75 @@ def clean_up_raw_result(data_DF, dataObject_or_dataPath, **kwargs):
 
         # Create headers.
         eventList_temp_Header = ['startTime', 'turnTime', 'endTime', 'duration', 'topTurn', 'residue_diff', 'residue_fit', 'theta_phi', 'VHT']
-        eventList_DF_0_original_temp              = pd.DataFrame(eventList_temp, columns=eventList_temp_Header)
-        eventList_DF_0_original_temp['startTime'] = pd.to_datetime(eventList_DF_0_original_temp['startTime'], format="%Y%m%d%H%M%S")
-        eventList_DF_0_original_temp['turnTime']  = pd.to_datetime(eventList_DF_0_original_temp['turnTime'], format="%Y%m%d%H%M%S")
-        eventList_DF_0_original_temp['endTime']   = pd.to_datetime(eventList_DF_0_original_temp['endTime'], format="%Y%m%d%H%M%S")
+        eventList_0_original_temp              = pd.DataFrame(eventList_temp, columns=eventList_temp_Header)
+        eventList_0_original_temp['startTime'] = pd.to_datetime(eventList_0_original_temp['startTime'], format="%Y%m%d%H%M%S")
+        eventList_0_original_temp['turnTime']  = pd.to_datetime(eventList_0_original_temp['turnTime'], format="%Y%m%d%H%M%S")
+        eventList_0_original_temp['endTime']   = pd.to_datetime(eventList_0_original_temp['endTime'], format="%Y%m%d%H%M%S")
         
-        # Find all records from eventList_DF_0_original_temp that fit the slots of slotList_DF_temp.
+        # Find all records from eventList_0_original_temp that fit the slots of slotList_temp.
         print('\nFitting the events into available slots...')
         if isVerbose:
-            print('Before fitting, totoal records is {}'.format(len(eventList_DF_0_original_temp)))
-        eventList_DF_2_fineResidue_temp = eventList_DF_0_original_temp.copy()
-        # Add keepFlag column to eventList_DF_1_fitSlot_temp.
-        eventList_DF_2_fineResidue_temp = eventList_DF_2_fineResidue_temp.assign(keepFlag=[False]*len(eventList_DF_2_fineResidue_temp))
+            print('Before fitting, totoal records is {}'.format(len(eventList_0_original_temp)))
+        eventList_1_fineResidue_temp = eventList_0_original_temp.copy()
+        eventList_1_fineResidue_temp = eventList_1_fineResidue_temp.assign(keepFlag=[False]*len(eventList_1_fineResidue_temp)) # Add keepFlag column
 
         # Remove the event with residue_diff > min_residue_diff and residue_fit > min_residue_fit.
         print('\nRemoving events with residue_diff > {} and residue_fit > {}...'.format(min_residue_diff, min_residue_fit))
         if isVerbose:
-            print('Before Removing, total records is {}.'.format(len(eventList_DF_2_fineResidue_temp)))
-        eventList_DF_2_fineResidue_temp = eventList_DF_2_fineResidue_temp[(eventList_DF_2_fineResidue_temp['residue_diff']<=min_residue_diff)&(eventList_DF_2_fineResidue_temp['residue_fit']<=min_residue_fit)]
-        # Reset index
-        eventList_DF_2_fineResidue_temp.reset_index(drop=True, inplace=True)
+            print('Before Removing, total records is {}.'.format(len(eventList_1_fineResidue_temp)))
+        eventList_1_fineResidue_temp = eventList_1_fineResidue_temp[(eventList_1_fineResidue_temp['residue_diff']<=min_residue_diff)&(eventList_1_fineResidue_temp['residue_fit']<=min_residue_fit)]
+        eventList_1_fineResidue_temp.reset_index(drop=True, inplace=True)
         if isVerbose:
-            print('After Removing, total records is {}.'.format(len(eventList_DF_2_fineResidue_temp)))
+            print('After Removing, total records is {}.'.format(len(eventList_1_fineResidue_temp)))
         print('Done.')
 
-        # 2) Check point: After removing bad residue, check if eventList_DF_2_fineResidue_temp is empty. If DataFrame eventList_DF_2_fineResidue_temp is empty. Skip the rest operations.
-        if eventList_DF_2_fineResidue_temp.empty:
-            print('\nDataFrame eventList_DF_2_fineResidue_temp is empty!')
+        # 2) Check point: After removing bad residue, check if eventList_1_fineResidue_temp is empty. If DataFrame eventList_1_fineResidue_temp is empty. Skip the rest operations.
+        if eventList_1_fineResidue_temp.empty:
+            print('\nDataFrame eventList_1_fineResidue_temp is empty!')
             print('Go the the next iteration!')
             continue
 
         # Clean up the records with same turnTime.
         print('\nCombining events with same turnTime...')
         if isVerbose:
-            print('Before combining, total records is {}.'.format(len(eventList_DF_2_fineResidue_temp)))
+            print('Before combining, total records is {}.'.format(len(eventList_1_fineResidue_temp)))
         
-        eventList_DF_2_fineResidue_temp = eventList_DF_2_fineResidue_temp.sort_values(by='turnTime') # Sort by turnTime.
-        index_max_duration_inGrouped = eventList_DF_2_fineResidue_temp.groupby(['turnTime'], sort=False)['duration'].transform(max) == eventList_DF_2_fineResidue_temp['duration'] # Group by turnTime.
+        eventList_1_fineResidue_temp = eventList_1_fineResidue_temp.sort_values(by='turnTime') # Sort by turnTime.
+        index_max_duration_inGrouped    = eventList_1_fineResidue_temp.groupby(['turnTime'], sort=False)['duration'].transform(max) == eventList_1_fineResidue_temp['duration'] # Group by turnTime.
         
         # Pick the event with max duration among the events sharing same turnPoint.
-        eventList_DF_3_combinedByTurnTime_temp = eventList_DF_2_fineResidue_temp[index_max_duration_inGrouped]
+        eventList_2_combinedByTurnTime_temp = eventList_1_fineResidue_temp[index_max_duration_inGrouped]
        
         # Some events with the same duration, same turnTime, but different residue_diff exist.
-        index_min_Residue_diff_inGrouped = eventList_DF_3_combinedByTurnTime_temp.groupby(['turnTime'], sort=False)['residue_diff'].transform(min) == eventList_DF_3_combinedByTurnTime_temp['residue_diff'] # Group by turnTime.
+        index_min_Residue_diff_inGrouped = eventList_2_combinedByTurnTime_temp.groupby(['turnTime'], sort=False)['residue_diff'].transform(min) == eventList_2_combinedByTurnTime_temp['residue_diff'] # Group by turnTime.
         
         # Pick the event with min residue_diff among the events sharing same turnPoint.
-        eventList_DF_3_combinedByTurnTime_temp = eventList_DF_3_combinedByTurnTime_temp[index_min_Residue_diff_inGrouped]
-        eventList_DF_3_combinedByTurnTime_temp.reset_index(drop=True, inplace=True) # Reset index
+        eventList_2_combinedByTurnTime_temp = eventList_2_combinedByTurnTime_temp[index_min_Residue_diff_inGrouped]
+        eventList_2_combinedByTurnTime_temp.reset_index(drop=True, inplace=True)
         if isVerbose:
-            print('After combining, total records is {}.'.format(len(eventList_DF_3_combinedByTurnTime_temp)))
+            print('After combining, total records is {}.'.format(len(eventList_2_combinedByTurnTime_temp)))
         print('Done.')
 
-        # No need to check whether eventList_DF_3_combinedByTurnTime_temp is empty: if eventList_DF_1_fitSlot_temp is not empty, eventList_DF_3_combinedByTurnTime_temp cannot be empty.
+        # No need to check whether eventList_2_combinedByTurnTime_temp is empty: if eventList_1_fitSlot_temp is not empty, eventList_2_combinedByTurnTime_temp cannot be empty.
+        # Add a Walen test result column: .assign() always returns a copy of the data, leaving the original DataFrame untouched.
         print('\nRemoving events failed in walen test...')
-        # Add an walen test result column: .assign() always returns a copy of the data, leaving the original DataFrame untouched.
-        eventList_DF_4_passWalenTest_temp = eventList_DF_3_combinedByTurnTime_temp.copy()
-        eventList_DF_4_passWalenTest_temp = eventList_DF_4_passWalenTest_temp.assign(r = len(eventList_DF_4_passWalenTest_temp)*[np.nan])
-        eventList_DF_4_passWalenTest_temp = eventList_DF_4_passWalenTest_temp.assign(k = len(eventList_DF_4_passWalenTest_temp)*[np.nan])
-        eventList_DF_4_passWalenTest_temp = eventList_DF_4_passWalenTest_temp.assign(MA = len(eventList_DF_4_passWalenTest_temp)*[np.nan])
+        eventList_3_passWalenTest_temp = eventList_2_combinedByTurnTime_temp.copy()
+        eventList_3_passWalenTest_temp = eventList_3_passWalenTest_temp.assign(r = len(eventList_3_passWalenTest_temp)*[np.nan])
+        eventList_3_passWalenTest_temp = eventList_3_passWalenTest_temp.assign(k = len(eventList_3_passWalenTest_temp)*[np.nan])
+        eventList_3_passWalenTest_temp = eventList_3_passWalenTest_temp.assign(MA = len(eventList_3_passWalenTest_temp)*[np.nan])
         
-        # Cacluate walen test r (correlation coefficient) value.
-        eventList_DF_4_passWalenTest_temp.reset_index(drop=True, inplace=True)
-        len_eventList_DF_4_before = len(eventList_DF_4_passWalenTest_temp)
-        for index, FR_record in eventList_DF_4_passWalenTest_temp.iterrows():
+        # Cacluate Walen test r (correlation coefficient) value.
+        eventList_3_passWalenTest_temp.reset_index(drop=True, inplace=True)
+        len_eventList_4_before = len(eventList_3_passWalenTest_temp)
+        for index, FR_record in eventList_3_passWalenTest_temp.iterrows():
             if isVerbose:
-                print('Walen test: checking duration {} minutes, {}/{}...'.format(duration_str_temp, index+1, len_eventList_DF_4_before))
+                print('Walen test: checking duration {} minutes, {}/{}...'.format(duration_str_temp, index+1, len_eventList_4_before))
             theta_deg, phi_deg = FR_record['theta_phi']
             VHT_inGSE = np.array(FR_record['VHT'])
             
             # Grab the data for one fluxrope candidate.
             selectedRange_mask = (data_DF.index >= FR_record['startTime']) & (data_DF.index <= FR_record['endTime'])
-            FR_record_data = data_DF.iloc[selectedRange_mask]
+            FR_record_data     = data_DF.iloc[selectedRange_mask]
 
             # Interpolate FR_record_data if there is any NaNs in any column.
             FR_record_data_interpolated = FR_record_data.copy(deep=True)
@@ -788,7 +779,7 @@ def clean_up_raw_result(data_DF, dataObject_or_dataPath, **kwargs):
             FR_record_data_interpolated.ffill(inplace=True)
             
             # Apply Walen test on the result(in FR frame).
-            B_inGSE = FR_record_data_interpolated[['Bx', 'By', 'Bz']]
+            B_inGSE   = FR_record_data_interpolated[['Bx', 'By', 'Bz']]
             Vsw_inGSE = FR_record_data_interpolated[['Vx', 'Vy', 'Vz']]
             
             # Project B_inGSE, VHT_inGSE, and Vsw_inFR into FR Frame.
@@ -812,109 +803,103 @@ def clean_up_raw_result(data_DF, dataObject_or_dataPath, **kwargs):
             
             # Call Walen test function: First row is x component, second row is y component, third row is z component.
             walenTest_slope, walenTest_intercept, walenTest_r_value = walenTest(VA_1D, V_remaining_1D)
-            eventList_DF_4_passWalenTest_temp.loc[index, 'r']  = round(walenTest_r_value, 4) # r.
-            eventList_DF_4_passWalenTest_temp.loc[index, 'k']  = round(walenTest_slope, 4) # k.
-            eventList_DF_4_passWalenTest_temp.loc[index, 'MA'] = Mach_average
+            eventList_3_passWalenTest_temp.loc[index, 'r']  = round(walenTest_r_value, 4) # r.
+            eventList_3_passWalenTest_temp.loc[index, 'k']  = round(walenTest_slope, 4) # k.
+            eventList_3_passWalenTest_temp.loc[index, 'MA'] = Mach_average
 
         # Remove the records with |k| > 0.3; except for when |k| > 0.3 & |r| >= 0.8 & MA <= 0.9
         # Keep the records with |k|<=0.3 & |r| >= 0.8 & MA =< 0.9
         print(f'\nKeeping records with |k| > {walenTest_k_threshold} & |r| >= {walenTest_r_threshold} & MA <= 0.9')
-        eventList_DF_4_passWalenTest_temp_FRFF = eventList_DF_4_passWalenTest_temp[( (abs(eventList_DF_4_passWalenTest_temp['k']) > walenTest_k_threshold) & ((abs(eventList_DF_4_passWalenTest_temp['r'])>= walenTest_r_threshold) & (eventList_DF_4_passWalenTest_temp['MA'] <= 0.900)))]
+        eventList_3_passWalenTest_temp_FRFF = eventList_3_passWalenTest_temp[( (abs(eventList_3_passWalenTest_temp['k']) > walenTest_k_threshold) & ((abs(eventList_3_passWalenTest_temp['r'])>= walenTest_r_threshold) & (eventList_3_passWalenTest_temp['MA'] <= 0.900)))]
 
         print(f'Keeping records with |k| <= {walenTest_k_threshold}')
-        eventList_DF_4_passWalenTest_temp = pd.concat([eventList_DF_4_passWalenTest_temp[(abs(eventList_DF_4_passWalenTest_temp['k']) <= walenTest_k_threshold)],eventList_DF_4_passWalenTest_temp_FRFF], axis=0)
-        eventList_DF_4_passWalenTest_temp = eventList_DF_4_passWalenTest_temp.sort_values(by='startTime')
-        eventList_DF_4_passWalenTest_temp.reset_index(drop=True, inplace=True)
-        len_eventList_DF_4_after = len(eventList_DF_4_passWalenTest_temp)
+        eventList_3_passWalenTest_temp = pd.concat([eventList_3_passWalenTest_temp[(abs(eventList_3_passWalenTest_temp['k']) <= walenTest_k_threshold)],eventList_3_passWalenTest_temp_FRFF], axis=0)
+        eventList_3_passWalenTest_temp = eventList_3_passWalenTest_temp.sort_values(by='startTime')
+        eventList_3_passWalenTest_temp.reset_index(drop=True, inplace=True)
+        len_eventList_4_after = len(eventList_3_passWalenTest_temp)
         if isVerbose:
-            print('Before Walen test, total records is {}.'.format(len_eventList_DF_4_before))
-            print('After Walen test, total records is {}.'.format(len_eventList_DF_4_after))
+            print('Before Walen test, total records is {}.'.format(len_eventList_4_before))
+            print('After Walen test, total records is {}.'.format(len_eventList_4_after))
         print('Done.')
 
-        # 4) Check point: After Walen test, check if eventList_DF_4_passWalenTest_temp is empty.
-        if eventList_DF_4_passWalenTest_temp.empty:
-            print('\nDataFrame eventList_DF_4_passWalenTest_temp is empty!')
+        # 4) Check point: After Walen test, check if eventList_3_passWalenTest_temp is empty.
+        if eventList_3_passWalenTest_temp.empty:
+            print('\nDataFrame eventList_3_passWalenTest_temp is empty!')
             print('Go the the next iteration!')
             continue
 
         ################################################################################################
         # Until now, we still may have duplicated events with same residue_diff but different residue_fit. Keep this in mind when perform furture operations.
-        
-        # Clean events with less than turnTime_tolerance minutes turnTime difference.
-        eventList_DF_6_cleanedTurnTime_temp = eventList_DF_4_passWalenTest_temp.copy() # Default is deep copy.
+        eventList_5_cleanedTurnTime_temp = eventList_3_passWalenTest_temp.copy()
         
         # Add difference of turn time column. Combine close turnTime.
-        eventList_DF_6_cleanedTurnTime_temp = eventList_DF_6_cleanedTurnTime_temp.assign(diff=eventList_DF_6_cleanedTurnTime_temp['turnTime'].diff())
-        eventList_DF_6_cleanedTurnTime_temp = eventList_DF_6_cleanedTurnTime_temp.assign(keepFlag=[True]*len(eventList_DF_6_cleanedTurnTime_temp))
-        index_column_keepFlag = eventList_DF_6_cleanedTurnTime_temp.columns.get_loc('keepFlag')
+        eventList_5_cleanedTurnTime_temp = eventList_5_cleanedTurnTime_temp.assign(diff=eventList_5_cleanedTurnTime_temp['turnTime'].diff())
+        eventList_5_cleanedTurnTime_temp = eventList_5_cleanedTurnTime_temp.assign(keepFlag=[True]*len(eventList_5_cleanedTurnTime_temp))
+        index_column_keepFlag = eventList_5_cleanedTurnTime_temp.columns.get_loc('keepFlag')
         print('\nCombining events with less than {} seconds turnTime difference...'.format(turnTime_tolerance))
         if isVerbose:
-            print('Before combining, total records is {}.'.format(len(eventList_DF_6_cleanedTurnTime_temp)))
+            print('Before combining, total records is {}.'.format(len(eventList_5_cleanedTurnTime_temp)))
+
+        # Remove events with turnTime difference less than turnTime_tolerance.
+        print('\nRemoving overlapped events...')
         i_index = 1
-        while(i_index < len(eventList_DF_6_cleanedTurnTime_temp)):
-            if(eventList_DF_6_cleanedTurnTime_temp['diff'].iloc[i_index] <= timedelta(seconds=turnTime_tolerance)):
+        while(i_index < len(eventList_5_cleanedTurnTime_temp)):
+            if(eventList_5_cleanedTurnTime_temp['diff'].iloc[i_index] <= timedelta(seconds=turnTime_tolerance)):
                 cluster_begin_temp = i_index - 1
-                while((eventList_DF_6_cleanedTurnTime_temp['diff'].iloc[i_index] <= timedelta(seconds=turnTime_tolerance)) ):
+                while((eventList_5_cleanedTurnTime_temp['diff'].iloc[i_index] <= timedelta(seconds=turnTime_tolerance)) ):
                     i_index += 1
-                    if (i_index > len(eventList_DF_6_cleanedTurnTime_temp)-1):
+                    if (i_index > len(eventList_5_cleanedTurnTime_temp)-1):
                         break
                 cluster_end_temp = i_index - 1
                 
                 # Get minimum residue_diff: .iloc[a:b]=[a,b), .loc[a:b]=[a,b]
-                min_residue_diff_index_temp = eventList_DF_6_cleanedTurnTime_temp['residue_diff'].iloc[cluster_begin_temp:cluster_end_temp+1].idxmin()
+                min_residue_diff_index_temp = eventList_5_cleanedTurnTime_temp['residue_diff'].iloc[cluster_begin_temp:cluster_end_temp+1].idxmin()
                 
                 # Set record with min_residue as true, others as false.
-                eventList_DF_6_cleanedTurnTime_temp.iloc[cluster_begin_temp:cluster_end_temp+1, index_column_keepFlag] = False
-                eventList_DF_6_cleanedTurnTime_temp.loc[min_residue_diff_index_temp, 'keepFlag'] = True
+                eventList_5_cleanedTurnTime_temp.iloc[cluster_begin_temp:cluster_end_temp+1, index_column_keepFlag] = False
+                eventList_5_cleanedTurnTime_temp.loc[min_residue_diff_index_temp, 'keepFlag'] = True
             else:
                 # For .iloc, can only use integer to specify row and column. No column string allowed.
-                eventList_DF_6_cleanedTurnTime_temp.iloc[i_index, index_column_keepFlag] = True
+                eventList_5_cleanedTurnTime_temp.iloc[i_index, index_column_keepFlag] = True
                 i_index += 1
 
         # Remove the records labeled as false.
-        eventList_DF_6_cleanedTurnTime_temp = eventList_DF_6_cleanedTurnTime_temp[eventList_DF_6_cleanedTurnTime_temp['keepFlag']==True]
-        eventList_DF_6_cleanedTurnTime_temp.reset_index(drop=True, inplace=True)
-        eventList_DF_6_cleanedTurnTime_temp = eventList_DF_6_cleanedTurnTime_temp.drop('diff', axis=1) # Drop diff.
-        eventList_DF_6_cleanedTurnTime_temp.reset_index(drop=True, inplace=True) # Reset index
+        eventList_5_cleanedTurnTime_temp = eventList_5_cleanedTurnTime_temp[eventList_5_cleanedTurnTime_temp['keepFlag']==True]
+        eventList_5_cleanedTurnTime_temp.reset_index(drop=True, inplace=True)
+        eventList_5_cleanedTurnTime_temp = eventList_5_cleanedTurnTime_temp.drop('diff', axis=1) # Drop diff.
+        eventList_5_cleanedTurnTime_temp.reset_index(drop=True, inplace=True)                       # Reset index
         if isVerbose:
-            print('After combining, total records is {}.'.format(len(eventList_DF_6_cleanedTurnTime_temp)))
+            print('After combining, total records is {}.'.format(len(eventList_5_cleanedTurnTime_temp)))
         print('Done.')
-        eventList_DF_7_fineFittingCurve_temp = eventList_DF_6_cleanedTurnTime_temp.copy()
+        eventList_6_fineFittingCurve_temp = eventList_5_cleanedTurnTime_temp.copy()
         
-        ###############################################################################################################
+        #############################################################################################################
         
-        # Sort eventList_DF_7_fineFittingCurve_temp by endTime.
-        eventList_DF_7_fineFittingCurve_temp = eventList_DF_7_fineFittingCurve_temp.sort_values(by='endTime')
-        eventList_DF_7_fineFittingCurve_copy_temp = eventList_DF_7_fineFittingCurve_temp.copy()
+        # Sort eventList_6_fineFittingCurve_temp by endTime.
+        eventList_6_fineFittingCurve_temp = eventList_6_fineFittingCurve_temp.sort_values(by='endTime')
+        eventList_7_fineFittingCurve_copy_temp = eventList_6_fineFittingCurve_temp.copy()
         
-        # Use the interval scheduling greedy algorithm to remove the overlapes.
-        print('\nRemoving overlapped events...')
-        eventList_DF_noOverlap = eventList_DF_noOverlap._append(eventList_DF_7_fineFittingCurve_copy_temp, ignore_index=True)
-        eventList_DF_noOverlap.sort_values(by='endTime', inplace=True)
+        print('\nAppending records to eventList_noOverlap...')
+        eventList_noOverlap = eventList_noOverlap._append(eventList_7_fineFittingCurve_copy_temp, ignore_index=True)
+        eventList_noOverlap.sort_values(by='endTime', inplace=True)
+        eventList_noOverlap.reset_index(drop=True, inplace=True)
         print('Done.')
-        
-        print('\nAppending records to eventList_DF_noOverlap...')
-        print('Done.')
-        progressionList = pd.concat([progressionList, pd.DataFrame({'beforeSlots':[len(eventList_DF_0_original_temp)], 'residuals':[len(eventList_DF_2_fineResidue_temp)], 'same_turnTime':[len(eventList_DF_3_combinedByTurnTime_temp)], 'turnTime<5pts':[len(eventList_DF_6_cleanedTurnTime_temp)]},index=[duration_str_temp])])
 
         if isPrintIntermediateDF:
-            print('\neventList_DF_0_original_temp:')
-            print(eventList_DF_0_original_temp)
-            print('\neventList_DF_2_fineResidue_temp:')
-            print(eventList_DF_2_fineResidue_temp)
-            print('\neventList_DF_3_combinedByTurnTime_temp:')
-            print(eventList_DF_3_combinedByTurnTime_temp)
-            print('\neventList_DF_6_cleanedTurnTime_temp:')
-            print(eventList_DF_6_cleanedTurnTime_temp)
-            print('\neventList_DF_7_fineFittingCurve_temp:')
-            print(eventList_DF_7_fineFittingCurve_temp)
-
-    # Reset index.
-    eventList_DF_noOverlap.reset_index(drop=True, inplace=True)
+            print('\neventList_0_original_temp:')
+            print(eventList_0_original_temp)
+            print('\neventList_1_fineResidue_temp:')
+            print(eventList_1_fineResidue_temp)
+            print('\neventList_2_combinedByTurnTime_temp:')
+            print(eventList_2_combinedByTurnTime_temp)
+            print('\neventList_5_cleanedTurnTime_temp:')
+            print(eventList_5_cleanedTurnTime_temp)
+            print('\neventList_6_fineFittingCurve_temp:')
+            print(eventList_6_fineFittingCurve_temp)    
 
     if isPrintIntermediateDF:
-        print('\neventList_DF_noOverlap:')
-        print(eventList_DF_noOverlap)
+        print('\neventList_noOverlap:')
+        print(eventList_noOverlap)
         
     # Move on to cleaning up entire list
     print('\n======================================================================')
@@ -923,110 +908,107 @@ def clean_up_raw_result(data_DF, dataObject_or_dataPath, **kwargs):
     # Clean up the records with same turnTime [for all windows].
     print('\nCombining events with same turnTime...')
     if isVerbose:
-        print('Before combining, total records is {}.'.format(len(eventList_DF_noOverlap)))
+        print('Before combining, total records is {}.'.format(len(eventList_noOverlap)))
     
-    eventList_DF_noOverlap = eventList_DF_noOverlap.sort_values(by='turnTime') # Sort by turnTime.
-    index_max_duration_inGrouped = eventList_DF_noOverlap.groupby(['turnTime'], sort=False)['duration'].transform(max) == eventList_DF_noOverlap['duration'] # Group by turnTime.
+    eventList_noOverlap = eventList_noOverlap.sort_values(by='turnTime') # Sort by turnTime.
+    index_max_duration_inGrouped = eventList_noOverlap.groupby(['turnTime'], sort=False)['duration'].transform(max) == eventList_noOverlap['duration'] # Group by turnTime.
     
     # Pick the event with max duration among the events sharing same turnPoint.
-    eventList_DF_noOverlap = eventList_DF_noOverlap[index_max_duration_inGrouped]
-    index_min_Residue_diff_inGrouped =eventList_DF_noOverlap.groupby(['turnTime'], sort=False)['residue_diff'].transform(min) == eventList_DF_noOverlap['residue_diff'] # Group by turnTime
+    eventList_noOverlap = eventList_noOverlap[index_max_duration_inGrouped]
+    index_min_Residue_diff_inGrouped = eventList_noOverlap.groupby(['turnTime'], sort=False)['residue_diff'].transform(min) == eventList_noOverlap['residue_diff'] # Group by turnTime
     
     # Pick the event with min residue_diff among the events sharing same turnPoint.
-    eventList_DF_noOverlap = eventList_DF_noOverlap[index_min_Residue_diff_inGrouped]
-    eventList_DF_noOverlap.reset_index(drop=True, inplace=True) # Reset index
+    eventList_noOverlap = eventList_noOverlap[index_min_Residue_diff_inGrouped]
+    eventList_noOverlap.reset_index(drop=True, inplace=True)
     if isVerbose:
-        print('After combining, total records is {}.'.format(len(eventList_DF_noOverlap)))
+        print('After combining, total records is {}.'.format(len(eventList_noOverlap)))
     print('Done.')
 
-    # Clean events with less than turnTime_tolerance minutes turnTime difference [for all windows].
-    eventList_DF_noOverlap_temp = eventList_DF_noOverlap.copy() # Default is deep copy.
-    eventList_DF_noOverlap_temp = eventList_DF_noOverlap_temp.assign(diff=eventList_DF_noOverlap_temp['turnTime'].diff())
-    eventList_DF_noOverlap_temp = eventList_DF_noOverlap_temp.assign(keepFlag=[True]*len(eventList_DF_noOverlap_temp))
-    index_column_keepFlag = eventList_DF_noOverlap_temp.columns.get_loc('keepFlag')
+    # Clean events with turnTime difference less than turnTime_tolerance [for all windows].
+    eventList_noOverlap_temp = eventList_noOverlap.copy()
+    eventList_noOverlap_temp = eventList_noOverlap_temp.assign(diff=eventList_noOverlap_temp['turnTime'].diff())
+    eventList_noOverlap_temp = eventList_noOverlap_temp.assign(keepFlag=[True]*len(eventList_noOverlap_temp))
+    index_column_keepFlag    = eventList_noOverlap_temp.columns.get_loc('keepFlag')
     print('\nCombining events with less than {} seconds turnTime difference...'.format(turnTime_tolerance))
     if isVerbose:
-        print('Before combining, total records is {}.'.format(len(eventList_DF_noOverlap_temp)))
+        print('Before combining, total records is {}.'.format(len(eventList_noOverlap_temp)))
     i_index = 1
-    while(i_index < len(eventList_DF_noOverlap_temp)):
-        if(eventList_DF_noOverlap_temp['diff'].iloc[i_index] <= timedelta(seconds=turnTime_tolerance)):
+    while(i_index < len(eventList_noOverlap_temp)):
+        if(eventList_noOverlap_temp['diff'].iloc[i_index] <= timedelta(seconds=turnTime_tolerance)):
             cluster_begin_temp = i_index - 1
-            while((eventList_DF_noOverlap_temp['diff'].iloc[i_index] <= timedelta(seconds=turnTime_tolerance)) ):
+            while((eventList_noOverlap_temp['diff'].iloc[i_index] <= timedelta(seconds=turnTime_tolerance)) ):
                 i_index += 1
-                if (i_index > len(eventList_DF_noOverlap_temp)-1):
+                if (i_index > len(eventList_noOverlap_temp)-1):
                     break
             cluster_end_temp = i_index - 1
             
             # Get minimum residue_diff: .iloc[a:b]=[a,b), .loc[a:b]=[a,b]
-            min_residue_diff_index_temp = eventList_DF_noOverlap_temp['residue_diff'].iloc[cluster_begin_temp:cluster_end_temp+1].idxmin()
+            min_residue_diff_index_temp = eventList_noOverlap_temp['residue_diff'].iloc[cluster_begin_temp:cluster_end_temp+1].idxmin()
             
             # Set record with min_residue as true, others as false.
-            eventList_DF_noOverlap_temp.iloc[cluster_begin_temp:cluster_end_temp+1, index_column_keepFlag] = False
-            eventList_DF_noOverlap_temp.loc[min_residue_diff_index_temp, 'keepFlag'] = True
+            eventList_noOverlap_temp.iloc[cluster_begin_temp:cluster_end_temp+1, index_column_keepFlag] = False
+            eventList_noOverlap_temp.loc[min_residue_diff_index_temp, 'keepFlag'] = True
         else:
             # For .iloc, can only use integer to specify row and column. No column string allowed.
-            eventList_DF_noOverlap_temp.iloc[i_index, index_column_keepFlag] = True
+            eventList_noOverlap_temp.iloc[i_index, index_column_keepFlag] = True
             i_index += 1
 
     # Remove the records labeled as false.
-    eventList_DF_noOverlap_temp = eventList_DF_noOverlap_temp[eventList_DF_noOverlap_temp['keepFlag']==True]
-    eventList_DF_noOverlap_temp.reset_index(drop=True, inplace=True)
-    eventList_DF_noOverlap_temp = eventList_DF_noOverlap_temp.drop('diff', axis=1)
-    eventList_DF_noOverlap_temp.reset_index(drop=True, inplace=True)
+    eventList_noOverlap_temp = eventList_noOverlap_temp[eventList_noOverlap_temp['keepFlag']==True]
+    eventList_noOverlap_temp.reset_index(drop=True, inplace=True)
+    eventList_noOverlap_temp = eventList_noOverlap_temp.drop('diff', axis=1)
+    eventList_noOverlap_temp.reset_index(drop=True, inplace=True)
     if isVerbose:
-        print('After combining, total records is {}.'.format(len(eventList_DF_noOverlap_temp)))
+        print('After combining, total records is {}.'.format(len(eventList_noOverlap_temp)))
     print('Done.')
-    eventList_DF_noOverlap = eventList_DF_noOverlap_temp.copy()
-    eventList_DF_noOverlap = eventList_DF_noOverlap.sort_values(by='startTime')
+    eventList_noOverlap = eventList_noOverlap_temp.copy()
+    eventList_noOverlap = eventList_noOverlap.sort_values(by='startTime')
 
     # Eliminate events that overlap
     print('\nRemoving overlapped events...')
     if isVerbose:
-        print('Before removing, total records is {}.'.format(len(eventList_DF_noOverlap)))
-    overlap_length = len(eventList_DF_noOverlap) +1
-    while overlap_length > len(eventList_DF_noOverlap):
+        print('Before removing, total records is {}.'.format(len(eventList_noOverlap)))
+    overlap_length = len(eventList_noOverlap) + 1
+    while overlap_length > len(eventList_noOverlap):
         # Create array of intervals
-        start_array = np.array([pd.Timestamp(elem) for elem in eventList_DF_noOverlap['startTime'].values])
-        end_array = np.array([pd.Timestamp(elem) for elem in eventList_DF_noOverlap['endTime'].values])
+        start_array = np.array([pd.Timestamp(elem) for elem in eventList_noOverlap['startTime'].values])
+        end_array   = np.array([pd.Timestamp(elem) for elem in eventList_noOverlap['endTime'].values])
         interval_array = pd.arrays.IntervalArray.from_arrays(start_array,end_array,closed='both')
 
         # Retrieving column index from column name.
-        eventList_DF_noOverlap = eventList_DF_noOverlap.assign(keepFlag=[True]*len(eventList_DF_noOverlap))
-        idx_column_keepFlag = eventList_DF_noOverlap.columns.get_loc('keepFlag')
+        eventList_noOverlap = eventList_noOverlap.assign(keepFlag=[True]*len(eventList_noOverlap))
+        idx_column_keepFlag = eventList_noOverlap.columns.get_loc('keepFlag')
 
         # Keep event with highest duration
-        for i_index in range(len(eventList_DF_noOverlap)):
+        for i_index in range(len(eventList_noOverlap)):
             interval = interval_array[i_index]
             idx_overlap = np.where(interval_array.overlaps(interval)==True)[0]
-            max_duration_idx = eventList_DF_noOverlap.loc[idx_overlap]['duration'].astype(float).idxmax()
-            eventList_DF_noOverlap.iloc[idx_overlap, idx_column_keepFlag] = False
-            eventList_DF_noOverlap.loc[max_duration_idx, 'keepFlag'] = True
+            max_duration_idx = eventList_noOverlap.loc[idx_overlap]['duration'].astype(float).idxmax()
+            eventList_noOverlap.iloc[idx_overlap, idx_column_keepFlag] = False
+            eventList_noOverlap.loc[max_duration_idx, 'keepFlag'] = True
 
-        eventList_DF_noOverlap = eventList_DF_noOverlap[eventList_DF_noOverlap['keepFlag']==True]
-        eventList_DF_noOverlap = eventList_DF_noOverlap.drop(columns=['keepFlag'])
-        eventList_DF_noOverlap.reset_index(drop=True,inplace=True)
+        eventList_noOverlap = eventList_noOverlap[eventList_noOverlap['keepFlag']==True]
+        eventList_noOverlap = eventList_noOverlap.drop(columns=['keepFlag'])
+        eventList_noOverlap.reset_index(drop=True,inplace=True)
 
-        start_array = np.array([pd.Timestamp(elem) for elem in eventList_DF_noOverlap['startTime'].values])
-        end_array = np.array([pd.Timestamp(elem) for elem in eventList_DF_noOverlap['endTime'].values])
+        start_array    = np.array([pd.Timestamp(elem) for elem in eventList_noOverlap['startTime'].values])
+        end_array      = np.array([pd.Timestamp(elem) for elem in eventList_noOverlap['endTime'].values])
         interval_array = pd.arrays.IntervalArray.from_arrays(start_array,end_array,closed='both')
         overlap_length = np.array([interval_array.overlaps(interval_array[i]).sum() for i in range(len(interval_array))]).sum()
         if isVerbose:
-            print('After removing overlapped events, total records is {}.'.format(len(eventList_DF_noOverlap)))
+            print('After removing overlapped events, total records is {}.'.format(len(eventList_noOverlap)))
         print('Done.')
 
     # Save DataFrame to output file.
-    print('\nSaving eventList_DF_noOverlap to pickle file...')
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    eventList_DF_noOverlap.to_csv(output_dir + '/' + output_filename + '.csv')
-    progressionList.to_csv('/home/rharvey/GS/GS_SearchResult/progression/' + year_str + '_progression' + residue_str + '.csv')
+    print('\nSaving eventList_noOverlap to {output_filename}')
+    eventList_noOverlap.to_csv(output_dir + output_filename)
     print('Done.')
 
-    return eventList_DF_noOverlap
+    return eventList_noOverlap
 
-#########################################################################
+#############################################################################################################
 
-# Calculate more information of given flux rope.
+# Calculate more information of given flux rope
 def get_more_flux_rope_info(data_DF, dataObject_or_dataPath, **kwargs):
     # Check input datatype: dataObject_or_dataPath should be the data or path of no overlapped eventlist.
     if isinstance(dataObject_or_dataPath, pd.DataFrame):
@@ -1039,25 +1021,26 @@ def get_more_flux_rope_info(data_DF, dataObject_or_dataPath, **kwargs):
         print('\nPlease input the correct datatype! The input data must be a DataFrame or the path of a DataFrame!')
         return None
     
-    output_filename = 'search_result_detailed_info' + namestr
-    output_dir = os.getcwd()
-    isVerbose = False
-    
-    print('\nDefault parameters:')
-    print('output_dir            = {}.'.format(output_dir))
-    print('output_filename       = {}.'.format(output_filename))
-    
     # If keyword is specified, overwrite the default value.
     if 'output_dir' in kwargs:
         output_dir = kwargs['output_dir']
-        print('output_dir is set to {}.'.format(output_dir))
+    else: 
+        output_dir = '/home/rharvey/Documents/GS-Analysis/SearchResult/detailed_info/'
+    
     if 'output_filename' in kwargs:
         output_filename = kwargs['output_filename']
-        print('output_filename is set to {}.'.format(output_filename))
+    else:
+        output_filename = namestr[:-1] + probe_str + '_detailed_info.p'
+    
     if 'isVerbose' in kwargs:
         isVerbose = kwargs['isVerbose']
-        print('isVerbose is set to {}'.format())
-    
+    else:
+        isVerbose = False
+        
+    print('output_dir            = {}.'.format(output_dir))
+    print('output_filename       = {}.'.format(output_filename))
+    print('isVerbose is set to {}'.format())
+
     # Create an empty dataframe.
     eventList_DF_detailedInfo = pd.DataFrame(columns=['startTime', 'turnTime', 'endTime', \
         'duration', 'size_inAU','residue_diff', 'residue_fit', 'theta_deg', 'phi_deg', 'A_range', \
@@ -1090,7 +1073,6 @@ def get_more_flux_rope_info(data_DF, dataObject_or_dataPath, **kwargs):
         startTime           = oneEvent['startTime']
         turnTime            = oneEvent['turnTime']
         endTime             = oneEvent['endTime']
-        # duration          = oneEvent['duration']
         duration            = (endTime - startTime).total_seconds()/60
         residue_diff        = oneEvent['residue_diff']
         residue_fit         = oneEvent['residue_fit']
@@ -1109,7 +1091,7 @@ def get_more_flux_rope_info(data_DF, dataObject_or_dataPath, **kwargs):
         selectedRange_mask = (data_DF.index >= startTime) & (data_DF.index <= endTime)
         data_oneFR_DF = data_DF.iloc[selectedRange_mask]
         if selectedRange_mask.sum() <=1:
-                continue
+            continue
         dt = float(sys.argv[3]) # seconds.
         
         # Get slice of data.
@@ -1188,13 +1170,13 @@ def get_more_flux_rope_info(data_DF, dataObject_or_dataPath, **kwargs):
         # Project B_inGSE & Vsw_inFR into FR Frame.
         matrix_transToFluxRopeFrame = np.array([X_unitVector, Y_unitVector, Z_unitVector]).T
         B_inFR   = B_inGSE.dot(matrix_transToFluxRopeFrame)
-        VHT_inFR = VHT_inGSE.dot(matrix_transToFluxRopeFrame).
+        VHT_inFR = VHT_inGSE.dot(matrix_transToFluxRopeFrame)
         Vsw_inFR = Vsw_inGSE.dot(matrix_transToFluxRopeFrame)
         
         # Apply Walen test on the result (in optimal frame).
         # Proton mass density. Original Np is in #/cc ( cc = cubic centimeter). Multiply by 1e6 to convert cc to m^3.
-        P_massDensity = Np * m_proton * 1e6 # kg/m^3.
-        len_P_massDensity = len(P_massDensity)
+        P_massDensity       = Np * m_proton * 1e6 # kg/m^3.
+        len_P_massDensity   = len(P_massDensity)
         P_massDensity_array = np.array(P_massDensity)
         P_massDensity_array = np.reshape(P_massDensity_array, (len_P_massDensity, 1))
 
@@ -1209,15 +1191,14 @@ def get_more_flux_rope_info(data_DF, dataObject_or_dataPath, **kwargs):
         # Check if Bz has negative values, if does, flip Z-axis direction.
         num_Bz_lt0 = (B_inFR[2]<0).sum()
         num_Bz_gt0 = (B_inFR[2]>0).sum()
-        # If the negative Bz is more than positive Bz, filp.
+        # If the negative Bz is more than positive Bz, reverse the direction of Z-axis.
         if (num_Bz_lt0 > num_Bz_gt0):
-            # Reverse the direction of Z-axis.
             print('Reverse the direction of Z-axis!')
             Z_unitVector = -Z_unitVector
 
             # Recalculate theta and phi with new Z_unitVector.
             theta_deg, phi_deg = directionVector2angle(Z_unitVector) 
-            X_unitVector = findXaxis(Z_unitVector, -VHT_inGSE)                                  # Refind X axis frome Z axis and -Vsw.
+            X_unitVector = findXaxis(Z_unitVector, -VHT_inGSE)                                   # Refind X axis frome Z axis and -Vsw.
             Y_unitVector = formRightHandFrame(X_unitVector, Z_unitVector)                        # Refind the Y axis to form a right-handed coordinater with X and Z.  
             matrix_transToFluxRopeFrame = np.array([X_unitVector, Y_unitVector, Z_unitVector]).T # Reproject B_inGSE_DataFrame into FR frame.
             B_inFR = B_inGSE.dot(matrix_transToFluxRopeFrame)
@@ -1265,7 +1246,7 @@ def get_more_flux_rope_info(data_DF, dataObject_or_dataPath, **kwargs):
 
         # Calculate A(x,0) by integrating By. A(x,0) = Integrate[-By(s,0)ds, {s, 0, x}], where ds = -Vht dot unit(X) dt.
         ds = - VHT_inFR[0] * 1000.0 * dt
-        A = integrate.cumulative_trapezoid(-(1-a)*B_inFR[1]*1e-9, dx=ds, initial=0)
+        A  = integrate.cumulative_trapezoid(-(1-a)*B_inFR[1]*1e-9, dx=ds, initial=0)
         
         # Calculate Pt(x,0). Pt(x,0)=p(x,0)+Bz^2/(2mu0). By = B_inFR[2]        
         Pp1 = np.array(Np['Np']) * 1e6 * 1.3806488e-23 * 1e9 * np.array(Tp['Tp'])
@@ -1274,9 +1255,8 @@ def get_more_flux_rope_info(data_DF, dataObject_or_dataPath, **kwargs):
         Pt  = ((1-a)**2)*Pb1 + (1-a)*Pp1 + (a*(1-a))*PB1
         # Pt = np.array((B_inFR[2] * 1e-9)**2 / (2.0*mu0) * 1e9) # 1e9 convert unit form pa to npa.
         
-        # Find the index of turnPoint.
+        # Find the index of turnPoint and split A and Pt into two branches.
         index_turnTime = B_inFR.index.get_indexer([turnTime],method='nearest')[0]
-        # Split A and Pt into two branches.
         A_sub1  = A[:index_turnTime+1]
         A_sub2  = A[index_turnTime:]
         Pt_sub1 = Pt[:index_turnTime+1]
@@ -1305,9 +1285,9 @@ def get_more_flux_rope_info(data_DF, dataObject_or_dataPath, **kwargs):
         '''
         
         # Get B statistical properties.
-        B_magnitude_max = B_norm_DF['|B|'].max(skipna=True)
-        B_inGSE = pd.concat([B_inGSE, B_norm_DF], axis=1)
-        B_std_Series = B_inGSE.std(axis=0,skipna=True,numeric_only=True)
+        B_magnitude_max   = B_norm_DF['|B|'].max(skipna=True)
+        B_inGSE           = pd.concat([B_inGSE, B_norm_DF], axis=1)
+        B_std_Series      = B_inGSE.std(axis=0,skipna=True,numeric_only=True)
         B_abs_mean_Series = B_inGSE.abs().mean(axis=0,skipna=True,numeric_only=True)
         
         B_mean_Series = B_inGSE.mean(axis=0,skipna=True,numeric_only=True)
@@ -1354,14 +1334,14 @@ def get_more_flux_rope_info(data_DF, dataObject_or_dataPath, **kwargs):
         else:
             Te_mean = None
         
-        # Get Other statistical properties.
+        # Get other statistical properties.
         Bx_inFR_VA = np.array(B_inFR[0] * 1e-9)/np.sqrt(mu0 * np.array(P_massDensity['Np'])) / 1000.0 # km/s
         By_inFR_VA = np.array(B_inFR[1] * 1e-9)/np.sqrt(mu0 * np.array(P_massDensity['Np'])) / 1000.0 # km/s
         Bz_inFR_VA = np.array(B_inFR[2] * 1e-9)/np.sqrt(mu0 * np.array(P_massDensity['Np'])) / 1000.0 # km/s
         Cross_heli=2*(V_remaining[:,0]*Bx_inFR_VA+V_remaining[:,1]*By_inFR_VA+V_remaining[:,2]*Bz_inFR_VA).mean()/((V_remaining[:,0]**2+V_remaining[:,1]**2+V_remaining[:,2]**2).mean()+(Bx_inFR_VA**2+By_inFR_VA**2+Bz_inFR_VA**2).mean())
         Residue_energy=((V_remaining[:,0]**2+V_remaining[:,1]**2+V_remaining[:,2]**2).mean()-(Bx_inFR_VA**2+By_inFR_VA**2+Bz_inFR_VA**2).mean())/((V_remaining[:,0]**2+V_remaining[:,1]**2+V_remaining[:,2]**2).mean()+(Bx_inFR_VA**2+By_inFR_VA**2+Bz_inFR_VA**2).mean())
         
-        # Calculate plasma Dynamic Pressure PD.
+        # Calculate plasma dynamic pressure PD.
         Pp = np.array(Np['Np']) * 1e6 * k_Boltzmann * np.array(Tp['Tp']) # Proton pressure.
         if 'Te' in data_oneFR_DF.keys():
             Pe = np.array(Np['Np']) * 1e6 * k_Boltzmann * np.array(Te['Te']) # Electron pressure.
@@ -1378,7 +1358,6 @@ def get_more_flux_rope_info(data_DF, dataObject_or_dataPath, **kwargs):
         Beta_p      = Pp/PB
         Beta_p_mean = np.mean(np.ma.masked_invalid(Beta_p))
 
-        #detailed_info_dict = {'startTime':startTime, 'turnTime':turnTime, 'endTime':endTime, 'duration':duration, 'residue_diff':residue_diff, 'residue_fit':residue_fit, 'theta_deg':theta_deg, 'phi_deg':phi_deg, 'A_range':A_range, 'Pt_coeff':Pt_coeff, 'Path_length':Path_length, 'VHT_inGSE[0]':VHT_inGSE[0], 'VHT_inGSE[1]':VHT_inGSE[1], 'VHT_inGSE[2]':VHT_inGSE[2], 'X_unitVector[0]':X_unitVector[0], 'X_unitVector[1]':X_unitVector[1], 'X_unitVector[2]':X_unitVector[2], 'Y_unitVector[0]':Y_unitVector[0], 'Y_unitVector[1]':Y_unitVector[1], 'Y_unitVector[2]':Y_unitVector[2], 'Z_unitVector[0]':Z_unitVector[0], 'Z_unitVector[1]':Z_unitVector[1], 'Z_unitVector[2]':Z_unitVector[2], 'walenTest_slope':walenTest_slope, 'walenTest_intercept':walenTest_intercept, 'walenTest_r_value':walenTest_r_value,  'B_abs_mean':B_abs_mean, 'Bx_abs_mean':Bx_abs_mean, 'By_abs_mean':By_abs_mean, 'Bz_abs_mean':Bz_abs_mean, 'B_std':B_std, 'Bx_std':Bx_std, 'By_std':By_std, 'Bz_std':Bz_std, 'Bx_inFR_abs_mean':Bx_inFR_abs_mean, 'By_inFR_abs_mean':By_inFR_abs_mean, 'Bz_inFR_abs_mean':Bz_inFR_abs_mean, 'Bx_inFR_std':Bx_inFR_std, 'By_inFR_std':By_inFR_std, 'Bz_inFR_std':Bz_inFR_std, 'B_magnitude_max':B_magnitude_max, 'Vsw_magnitude_mean':Vsw_magnitude_mean, 'Tp_mean':Tp_mean, 'Np_mean':Np_mean, 'Te_mean':Te_mean, 'Beta_mean':Beta_mean, 'Beta_p_mean':Beta_p_mean, 'lambda1':lambda1, 'lambda2':lambda2, 'lambda3':lambda3, 'eigenVectorMaxVar_lambda1[0]':eigenVectorMaxVar_lambda1[0], 'eigenVectorMaxVar_lambda1[1]':eigenVectorMaxVar_lambda1[1], 'eigenVectorMaxVar_lambda1[2]':eigenVectorMaxVar_lambda1[2], 'eigenVectorInterVar_lambda2[0]':eigenVectorInterVar_lambda2[0], 'eigenVectorInterVar_lambda2[1]':eigenVectorInterVar_lambda2[1], 'eigenVectorInterVar_lambda2[2]':eigenVectorInterVar_lambda2[2], 'eigenVectorMinVar_lambda3[0]':eigenVectorMinVar_lambda3[0], 'eigenVectorMinVar_lambda3[1]':eigenVectorMinVar_lambda3[1], 'eigenVectorMinVar_lambda3[2]':eigenVectorMinVar_lambda3[2], 'Vswlambda1':Vswlambda1, 'Vswlambda2':Vswlambda2, 'Vswlambda3':Vswlambda3, 'VsweigenVectorMaxVar_lambda1[0]':VsweigenVectorMaxVar_lambda1[0], 'VsweigenVectorMaxVar_lambda1[1]':VsweigenVectorMaxVar_lambda1[1], 'VsweigenVectorMaxVar_lambda1[2]':VsweigenVectorMaxVar_lambda1[2], 'VsweigenVectorInterVar_lambda2[0]':VsweigenVectorInterVar_lambda2[0], 'VsweigenVectorInterVar_lambda2[1]':VsweigenVectorInterVar_lambda2[1], 'VsweigenVectorInterVar_lambda2[2]':VsweigenVectorInterVar_lambda2[2], 'VsweigenVectorMinVar_lambda3[0]':VsweigenVectorMinVar_lambda3[0], 'VsweigenVectorMinVar_lambda3[1]':VsweigenVectorMinVar_lambda3[1], 'eigenVectorMinVar_lambda3[2]':eigenVectorMinVar_lambda3[2], 'Vrlambda1':Vrlambda1, 'Vrlambda2':Vrlambda2, 'Vrlambda3':Vrlambda3, 'VreigenVectorMaxVar_lambda1[0]':VreigenVectorMaxVar_lambda1[0], 'VreigenVectorMaxVar_lambda1[1]':VreigenVectorMaxVar_lambda1[1], 'VreigenVectorMaxVar_lambda1[2]':VreigenVectorMaxVar_lambda1[2], 'VreigenVectorInterVar_lambda2[0]':VreigenVectorInterVar_lambda2[0], 'VreigenVectorInterVar_lambda2[1]':VreigenVectorInterVar_lambda2[1], 'VreigenVectorInterVar_lambda2[2]':VreigenVectorInterVar_lambda2[2], 'VreigenVectorMinVar_lambda3[0]':VreigenVectorMinVar_lambda3[0], 'VreigenVectorMinVar_lambda3[1]':VreigenVectorMinVar_lambda3[1], 'VreigenVectorMinVar_lambda3[2]':VreigenVectorMinVar_lambda3[2], 'Mach_average':Mach_average, 'Average_Mach':Average_Mach, 'Alpha2Proton_ratio_mean': Alpha2Proton_ratio_mean, 'Alpha2Proton_ratio_max':Alpha2Proton_ratio_max, 'Alpha2Proton_ratio_min':Alpha2Proton_ratio_min}
         detailed_info_dict = {'startTime':startTime, 'turnTime':turnTime, 'endTime':endTime, \
         'duration':duration, 'size_inAU':size_inAU,'residue_diff':residue_diff, 'residue_fit':residue_fit, 'theta_deg':theta_deg, \
         'phi_deg':phi_deg, 'A_range':A_range, 'Pt_coeff':Pt_coeff, 'Path_length':Path_length, 'VHT_inGSE[0]':VHT_inGSE[0], \
@@ -1419,22 +1398,17 @@ def get_more_flux_rope_info(data_DF, dataObject_or_dataPath, **kwargs):
 
     # Save DataFrame to output file.
     print('\nSaving eventList_DF_detailedInfo to output file...')
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    eventList_DF_detailedInfo.to_pickle(output_dir + '/' + output_filename + '.p')
+    eventList_DF_detailedInfo.to_pickle(output_dir + output_filename)
     print('Done.')
     return eventList_DF_detailedInfo
 
+#############################################################################################################
 
-###############################################################################
-
-# Stack two images verticlly.
+# Stack two images vertically: merge two images into one, displayed side by side
 def vstack_images(file1, file2):
-    """Merge two images into one, displayed side by side
-    :param file1: path to first image file
-    :param file2: path to second image file
-    :return: the merged Image object
-    """
+    # file1: path to first image file
+    # file2: path to second image file
+
     image1 = Image.open(file1)
     image2 = Image.open(file2)
 
@@ -1447,4 +1421,5 @@ def vstack_images(file1, file2):
     result = Image.new('RGB', (result_width, result_height), color=(255,255,255))
     result.paste(im=image1, box=(0, 0))
     result.paste(im=image2, box=(0, height1))
-    return result
+
+    return result # merged Image object

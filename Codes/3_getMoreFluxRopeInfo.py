@@ -21,10 +21,8 @@ inputDir  = 'SearchResult/no_overlap/'
 ###############################################################################
 
 # Command line argument.
-year_str  = sys.argv[1]
-dt        = float(sys.argv[2]) # seconds
-namestr   = sys.argv[3]
-probe_str = sys.argv[4]
+namestr   = sys.argv[1]
+probe_str = sys.argv[2]
 
 # Read in all data.
 print('Reading data...')
@@ -32,7 +30,4 @@ DataFrame = pd.read_csv('/home/rharvey/data/data' + namestr + probe_str '.csv',i
 
 # Get more flux rope information.
 search_result_no_overlap_DF_fileName = rootDir + inputDir + namestr[:-1] + probe_str + '_no_overlap.p'
-search_result_detail_info_DF = FR.get_more_flux_rope_info(DataFrame, search_result_no_overlap_DF_fileName, output_dir=outputDir, output_filename=namestr[:-1] + probe_str+'_detailed_info')
-
-
-
+search_result_detail_info_DF = FR.get_more_flux_rope_info(DataFrame, search_result_no_overlap_DF_fileName, output_dir=outputDir, output_filename=namestr[:-1] + probe_str+'_detailed_info.p')

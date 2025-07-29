@@ -1,54 +1,16 @@
-import os
 import sys
-import pickle
 import numpy as np
-import pandas as pd
-from datetime import datetime
 
 rootDir   = '/home/rharvey/GS-Analsis/'
 inputDir  = 'SearchResult/selected_events/'
-outputDir = 'Events/'
 
-def addTableRow(fileToWrite, data_list, background_color):
-    fileToWrite.write('<tr> <!-- talbe row -->\n')
-    for i in range(len(data_list)):
-        if i == 1:
-            trimed_time_str = data_list[i].replace('/', '')
-            trimed_time_str = trimed_time_str.replace(' ', '')
-            trimed_time_str = trimed_time_str.replace(':', '')
-            trimed_time_str = trimed_time_str.replace('~', '_')
-            URL = 'events/' + trimed_time_str + '.html'
-            fileToWrite.write('<td align="center" valign="middle" bgcolor="' + background_color + '">' + '<a href="' + URL + '">' + data_list[i] + '</a>' + '</td>\n')
-        else:
-            fileToWrite.write('<td align="center" valign="middle" bgcolor="' + background_color + '">' + data_list[i] + '</td>\n')
-    fileToWrite.write('</tr>\n')
-#############################################################################################################
+namestr = sys.argv[1]
+year    = int(namestr[1:4])
 
-# Command line argument.
-year_str  = sys.argv[1]
-year      = int(year_str)
-namestr   = sys.argv[2]
-probe_str = sys.argv[3]
-
-# Load DataFrame
-inputFileName = namestr[:-1] + probe_str + '(|B|>0)_selected_events.p'
-FR_detailed_info = pickle.load(open(rootDir + inputDir + inputFileName,'rb'))
-
-# Save data to CSV file.
-print('\nSaving results data to CSV file...')
-columns_to_csv = ['startTime', 'endTime', 'duration','residue_fit', 'residue_diff', 'B_abs_mean','B_magnitude_max', 'Beta_mean', 'Beta_p_mean', 'Vsw_magnitude_mean', 'Tp_mean', 'theta_deg', 'phi_deg', 'Z_unitVector[0]', 'Z_unitVector[1]', 'Z_unitVector[2]','size_inAU','walenTest_slope','walenTest_slope_b4reverse','Np_mean', 'Mach_average','A_range','Bx_inFR_abs_mean', 'By_inFR_abs_mean', 'Bz_inFR_abs_mean','VHT_inGSE[0]', 'VHT_inGSE[1]', 'VHT_inGSE[2]','walenTest_r_value','walenTest_r_value_b4reverse','Cross_heli','Br_mean','Residue_energy','Jzmax','turnTime']
-csv_header = ['Start Time', 'End Time', 'Duration','Residue_fit', 'Residue_diff', '<B>(nT)','Bmax(nT)', '<Beta>', '<Beta_p>', '<Vsw>(km/s)', '<Tp>(10^6K)', 'theta(deg)', 'phi(deg)', 'z_axis[0](in RTN)', 'z_axis[1](in RTN)', 'z_axis[2](in RTN)','size_inAU','walenTest_slope','walenTest_slope_b4reverse','Np_mean', 'Mach_average','A_range','Bx_inFR_abs_mean', 'By_inFR_abs_mean', 'Bz_inFR_abs_mean','VHT_inRTN[0]', 'VHT_inRTN[1]', 'VHT_inRTN[2]','walenTest_r_value','walenTest_r_value_b4reverse','Cross_heli','Br_mean','Residue_energy','Jzmax', 'turnTime']
-FR_detailed_csv = FR_detailed_info[columns_to_csv]
-FR_detailed_csv.columns = csv_header
-FR_detailed_csv.to_csv(path_or_buf=rootDir + outputDir + 'events' + namestr + probe_str + '.csv')
-print('\nevents' + namestr + probe_str + '.csv is saved!')
-print(FR_detailed_csv[['Start Time', 'End Time', 'Duration', 'Residue_fit', 'Residue_diff', 'walenTest_slope', 'walenTest_r_value', 'Mach_average']])
-
-'''
 # Constructing webpage.
 print('\nCreating webpage...')
-html_filename = 'year'+year_str+'.html'
-html_webpage_file = open(rootDir + outputWebDir + html_filename,'w')
+html_filename = hours + namestr + '.html' #'year'+year_str+'.html'
+html_webpage_file = open(rootDir + 'Web/'+ html_filename,'w')
 f = html_webpage_file # html heading.
 f.write('<html>\n')   # python will convert \n to os.linesep
 
@@ -70,14 +32,14 @@ f.write('<br />\n')
 
 # Webpage head.
 f.write('<head>\n')
-f.write('<title>Encounter' + year_str + '</title>\n')
+f.write('<title>Encounter' + str(year) + '</title>\n')
 f.write('</head>\n')
 
 # Open webpage body.
 f.write('<body>\n')
 
 # Content title
-f.write('<h2><center><font size="5">Small-scale Flux Rope Events in ' + year_str +'</font><center></h2>\n')
+f.write('<h2><center><font size="5">Small-scale Flux Rope Events in ' + str(year) +'</font><center></h2>\n')
 f.write('<hr width="1096px"/>\n')
 
 # Open data table.
@@ -86,7 +48,7 @@ f.write('<tr> <!-- talbe row -->\n')                                            
 f.write('<th scope="col" width="50" align="center" valign="middle" bgcolor="#6194C9"> No. </th>\n')                                        # Heading: 1) No.
 f.write('<th scope="col" width="280" align="center" valign="middle" bgcolor="#6194C9"> Time Range </th>\n')                                # Heading: 2) Time range.
 f.write('<th scope="col" width="70" align="center" valign="middle" bgcolor="#6194C9"> Duration </th>\n')                                   # Heading: 3) duration.
-# f.write('<th scope="col" width="80" align="center" valign="middle" bgcolor="#6194C9"> Wait Time </th>\n')                                # Heading: 4) Wait Time.
+f.write('<th scope="col" width="80" align="center" valign="middle" bgcolor="#6194C9"> Wait Time </th>\n')                                  # Heading: 4) Wait Time.
 f.write('<th scope="col" width="80" align="center" valign="middle" bgcolor="#6194C9"> Residue </th>\n')                                    # Heading: 5) Residue.
 f.write('<th scope="col" width="80" align="center" valign="middle" bgcolor="#6194C9"> &lt;B&gt; (nT) </th>\n')                             # Heading: 6) Bmean.
 f.write('<th scope="col" width="80" align="center" valign="middle" bgcolor="#6194C9"> B<sub>max</sub> (nT) </th>\n')                       # Heading: 7) Bmax.
@@ -174,4 +136,3 @@ f.write('</table>\n') # Close table.
 f.write('</body>\n')  # Close body.
 f.write('</html>\n')  # Close html.
 f.close()             # Close file.
-'''

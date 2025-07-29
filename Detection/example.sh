@@ -1,11 +1,13 @@
-#!/bin/sh
+#!/bin/bash
 
-time_head='2019-09-27 00:00'
-time_tail='2019-09-27 18:00'
+probe_str='_MMS1'
+time_head='2015-09-10 12:34'
+time_tail='2015-09-10 19:15'
+namestr='_20150910_20150911'
 
-python3 ~/GS-Analysis/Codes/GS_detection.py $1 11 15 6 1 $2 $3 $4
+python3 /home/rharvey/Documents/GS-Analysis/Codes/GS_detection.py $1 $2 $3 $4 11 15 6 1 $5 $6
 
-#$1 = year
-#$2 = dt
-#$4 = time_head
-#$5 = time_tail
+# $1 = time_head
+# $2 = time_tail
+# $3 = namestr
+# $4 = probe_str

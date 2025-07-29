@@ -93,9 +93,9 @@ from scipy import integrate, stats
 from scipy.signal import savgol_filter
 from datetime import datetime, timedelta
 from ast import literal_eval
-import spacepy.toolbox as tb
-tb.update(leapsecs=True)
-import MyPythonPackage.fluxrope as FR
+# import spacepy.toolbox as tb
+# tb.update(leapsecs=True)
+import fluxrope as FR
 import warnings
 warnings.filterwarnings(action="ignore", module="scipy", message="^internal gelsd")
 #############################################################################################################
@@ -106,42 +106,40 @@ global m_proton         # Proton mass [kg]
 global factor_deg2rad   # Convert degree to radians
 global k_Boltzmann      # Boltzmann constant, in J/K.
 
-mu0 = 4.0 * np.pi * 1e-7
-m_proton = 1.6726219e-27 # kg
+mu0 = 4.0 * np.pi * 1e-7     # (N/A^2)
+m_proton = 1.6726219e-27     # kg
 factor_deg2rad = np.pi/180.0 # radians
-k_Boltzmann = 1.3806488e-23 # J/K.
+k_Boltzmann = 1.3806488e-23  # J/K
 
 #############################################################################################################
 
 # Choose root directory according to environment.
 rootDir = '/home/rharvey/Documents/GS-Analysis/'
-
+dataDir = '/home/rharvey/data/'
 verbose = True
 flag_smoothA = True
 
 ###############################################################################################################
 # Command line argument.
-year_str       = sys.argv[1]
-size_start_str = sys.argv[2]
-size_end_str   = sys.argv[3]
-size_step_str  = sys.argv[4]
-overlap_str    = sys.argv[5]
-namestr        = sys.argv[11]
-year           = int(year_str)
+time_head      = sys.argv[1]+' '+sys.argv[2]
+time_tail      = sys.argv[3]+' '+sys.argv[4]
+size_start_str = sys.argv[5]
+size_end_str   = sys.argv[6]
+size_step_str  = sys.argv[7]
+overlap_str    = sys.argv[8]
+namestr        = sys.argv[9]
+probe_str      = sys.argv[10]
 
 size_start = int(size_start_str)
-size_end = int(size_end_str)
-size_step = int(size_step_str)
-overlap = int(overlap_str)
+size_end   = int(size_end_str)
+size_step  = int(size_step_str)
+overlap    = int(overlap_str)
 
 if verbose:
-    print(f'year_str={year_str}')
     print(f'size_start_str={size_start_str}')
     print(f'size_end_str={size_end_str}')
     print(f'size_step_str={size_step_str}')
     print(f'overlap_str={overlap_str}')
-    print(f'dt={sys.argv[6]}')
-    print(sys.argv[11])
 
 duration_range_list = []
 size_start_one_iter_temp = size_start
@@ -174,60 +172,64 @@ duration_range_tuple = tuple(tuple(element) for element in duration_range_list)
 
 # Set log.
 fr_log_bufsize = 1 # 0 means unbuffered, 1 means line buffered.
-fr_log_filename = 'fr' + year_str + '_' + size_start_str + '_' + size_end_str + '_' + size_step_str + '.log'
+fr_log_filename = 'fr' + namestr + '_' + size_start_str + '_' + size_end_str + '_' + size_step_str + '.log'
 fr_log_path = rootDir +'log/'
 fr_log_path_filename = fr_log_path + fr_log_filename
 fr_log = open(fr_log_path_filename, 'w', fr_log_bufsize)
 sys.stdout = fr_log
 
-print('\nDuration range is: {}'.format(duration_range_tuple))
-print('Searching fluxrope in {}.'.format(year_str))
+# Set search range.
+searchDatetimeStart = datetime.strptime(time_head,'%Y-%m-%d %H:%M')
+searchDatetimeEnd   = datetime.strptime(time_tail,'%Y-%m-%d %H:%M')
 
-# If year folder does not exist, create it.
-if not os.path.exists(rootDir + 'output/' + year_str):
-    os.makedirs(rootDir + 'output/' + year_str)
+if searchDatetimeStart.day == searchDatetimeEnd.day:
+    date_str = searchDatetimeStart.strftime('%d %B %Y %H:%M:%S') + '--' + searchDatetimeEnd.strftime('%H:%M:%S')
+else:
+    date_str = searchDatetimeStart.strftime('%d %B %Y %H:%M:%S') + '--' + searchDatetimeEnd.strftime('%d %B %Y %H:%M:%S')
+
+print('\nDuration range is: {}'.format(duration_range_tuple))
+print('Searching fluxrope in {}.'.format(date_str))
+
+# If output folder for specific date does not exist, create it.
+if not os.path.exists(rootDir + 'output/' + namestr[1:] + probe_str):
+    os.makedirs(rootDir + 'output/' + namestr[1:] + probe_str)
 
 # =================================== Read and Check data =======================================
 # Read in data.
 print('Reading data...')
-GS_AllData_DataFrame = pd.read_pickle(rootDir + 'GS_DataPickleFormat/preprocessed/GS_' + year_str + '_AllData_DataFrame_preprocessed_MMS1' + namestr + '.p')
+GS_DataFrame = pd.read_csv(dataDir + 'data' + probe_str + namestr + '.csv', index_col=0)
+dt = np.diff(pd.to_datetime(GS_DataFrame.index))[0] / pd.Timedelta('1s')
+print(dt)
 
 # Check data property.
-print('Checking DataFrame keys... {}'.format(GS_AllData_DataFrame.keys()))
-print('Checking DataFrame shape... {}'.format(GS_AllData_DataFrame.shape))
-print('Data Time start: {}'.format(GS_AllData_DataFrame.index[0]))
-print('Data Time end: {}'.format(GS_AllData_DataFrame.index[-1]))
+print('Checking DataFrame keys... {}'.format(GS_DataFrame.keys()))
+print('Checking DataFrame shape... {}'.format(GS_DataFrame.shape))
+print('Data Time start: {}'.format(GS_DataFrame.index[0]))
+print('Data Time end: {}'.format(GS_DataFrame.index[-1]))
 print('Checking the number of NaNs in DataFrame...')
-len_GS_AllData_DataFrame = len(GS_AllData_DataFrame)
-for key in GS_AllData_DataFrame.keys():
-    num_notNaN = GS_AllData_DataFrame[key].isnull().values.sum()
-    percent_notNaN = 100.0 - num_notNaN * 100.0 / len_GS_AllData_DataFrame
+len_GS_DataFrame = len(GS_DataFrame)
+for key in GS_DataFrame.keys():
+    num_notNaN = GS_DataFrame[key].isnull().values.sum()
+    percent_notNaN = 100.0 - num_notNaN * 100.0 / len_GS_DataFrame
     print('The number of NaNs in {} is {}, integrity is {}%'.format(key, num_notNaN, round(percent_notNaN, 2)))
-
-
-# Set search range. Though we read one year data, we may not want to search the whole year.
-searchDatetimeStart = datetime.strptime(sys.argv[7]+' '+sys.argv[8],'%Y-%m-%d %H:%M')
-searchDatetimeEnd   = datetime.strptime(sys.argv[9]+' '+sys.argv[10],'%Y-%m-%d %H:%M')
-
-# Get slice of data
-selectedRange_mask = (GS_AllData_DataFrame.index >= searchDatetimeStart) & (GS_AllData_DataFrame.index <= searchDatetimeEnd)
-GS_DataFrame = GS_AllData_DataFrame.iloc[selectedRange_mask]
-B_DataFrame = GS_DataFrame[['Bx','By','Bz']] 
-Vsw_DataFrame = GS_DataFrame[['Vx','Vy','Vz']]
-Np_DataFrame = GS_DataFrame['Np']
-Tp_DataFrame = GS_DataFrame['Tp']
 
 '''
 # DO NOT DELETE THIS COMMENT.
-# Good for insertion, not good for range selection. if datetime = datetime(year, 1,1,2,59,59), 
-# returned index is from datetime(year, 1,1,2,59,0). However, if datetime = datetime(year, 1,1,2,59,0),
-# returned index is from datetime(year, 1,1,2,58,0). Uncertain, do not use.
+# Good for insertion, not good for range selection. if datetime = datetime(year, 1,1,2,59,59), then the returned index is from datetime(year, 1,1,2,59,0). However, if datetime = datetime(year, 1,1,2,59,0), then the returned index is from datetime(year, 1,1,2,58,0).
 # Get the start and end DataFrame indices according to the start and end datetime.
-index_start = GS_AllData_DataFrame.index.searchsorted(searchDatetimeStart)
-index_end = GS_AllData_DataFrame.index.searchsorted(searchDatetimeEnd) # index_end not include searchDatetimeEnd.
+index_start = GS_DataFrame.index.searchsorted(searchDatetimeStart)
+index_end   = GS_DataFrame.index.searchsorted(searchDatetimeEnd) # index_end not include searchDatetimeEnd.
 # Get the records between start and end time from DataFrame.
-GS_DataFrame = GS_AllData_DataFrame.iloc[index_start:index_end+1] #.iloc works on location.
+GS_DataFrame = GS_DataFrame.iloc[index_start:index_end+1] #.iloc works on location.
 '''
+
+# Get slice of data
+selectedRange_mask = (pd.to_datetime(GS_DataFrame.index) >= searchDatetimeStart) & (pd.to_datetime(GS_DataFrame.index) <= searchDatetimeEnd)
+GS_DataFrame  = GS_DataFrame.iloc[selectedRange_mask]
+B_DataFrame   = GS_DataFrame[['Bx','By','Bz']] 
+Vsw_DataFrame = GS_DataFrame[['Vx','Vy','Vz']]
+Np_DataFrame  = GS_DataFrame['Np']
+Tp_DataFrame  = GS_DataFrame['Tp']
 
 # Multiprocessing
 num_cpus = multiprocessing.cpu_count()
@@ -236,14 +238,17 @@ print ('\nTotol CPU cores on this node = ', num_cpus)
 pool = multiprocessing.Pool(processes=max_processes) # Create a multiprocessing pool with safe_lock.
 results = []                                         # Create a list to save result.
 
-# Set search parameters.
-theta_stepLength = 10 # degrees
-phi_stepLength = 2 * theta_stepLength # degrees
+num_FluxRope = 0
+search_result_raw_true = {}
+search_result_raw_false = {}
+totalStartTime = datetime.now()
+
+# Theta grid number: 90/9=10, d_theta=10(degree); 90/12=7.5, d_theta=7.5(degree)
+n_theta_grid = 9
+print('Grid size of theta & phi = {} & {}'.format(90/n_theta_grid, 180/n_theta_grid))
 
 # First integer in tuple is minimum duration threshold, second integer in tuple is searching window width.
 print('\nDuration range tuple is: {}'.format(duration_range_tuple))
-num_FluxRope = 0
-totalStartTime = datetime.now()
 
 # Apply GS detection in sliding window (window width).
 for duration_range in duration_range_tuple:
@@ -266,7 +271,7 @@ for duration_range in duration_range_tuple:
     # Flexible interpolation limit based on window length. 
     # The maximum gap tolerance is up to 30% of total points count.
     interp_limit = int(math.ceil(minDuration*3.0/10)) # interp_limit = 1
-    print('interp_limit = {}'.format(interp_limit))
+    # print('interp_limit = {}'.format(interp_limit))
     
     # Sliding window. If half_window=15, len(DataFrame)=60, range(15,45)=[15,...,44].
     for indexFluxRopeStart in range(len(B_DataFrame) - maxDuration): # minutes.
@@ -318,7 +323,7 @@ for duration_range in duration_range_tuple:
         # VHT_inGSE = np.array(Vsw_inWindow.mean())
         
         # Return value: timeRange, Residue, orientation
-        result_temp = pool.apply_async(searchFluxRopeInWindow, args=(B_inWindow, VHT_inGSE, theta_stepLength, phi_stepLength, minDuration, dt, flag_smoothA, Np_inWindow, Tp_inWindow, Vsw_inWindow))
+        result_temp = pool.apply_async(FR.searchFluxRopeInWindow, args=(B_inWindow, VHT_inGSE, n_theta_grid, minDuration, dt, flag_smoothA, Np_inWindow, Tp_inWindow, Vsw_inWindow))
         # print(result_temp.get()) # This statement will cause IO very slow.
         results.append(result_temp)
         # DO NOT unpack result here. It will block IO. Unpack in bulk.
@@ -332,13 +337,13 @@ for duration_range in duration_range_tuple:
     print('{} - Duration range {}~{} minutes is completed!'.format(time.ctime(), minDuration, maxDuration))
 
     # Save result. One file per window size.
-    results_true_tuple_list = []
+    results_true_tuple_list  = []
     results_false_tuple_list = []
     
     # Unpack results. Convert to tuple, and put into list.
     for one_result in results:
         results_tuple_temp = (one_result.get())
-        if not np.isinf(results_tuple_temp[5]): # Check residue.
+        if not np.isinf(results_tuple_temp[5]):                     # Check residue.
             if results_tuple_temp[4]:
                 results_true_tuple_list.append(results_tuple_temp)  # Turn point on top.
             else:                                                       
@@ -346,19 +351,19 @@ for duration_range in duration_range_tuple:
 
     # Save results to dictionary. One key per window size.
     key_temp = str(minDuration) + '~' + str(maxDuration)
-    search_result_raw_true[key_temp] = results_true_tuple_list
+    search_result_raw_true[key_temp]  = results_true_tuple_list
     search_result_raw_false[key_temp] = results_false_tuple_list
-    results = [] # Empty container results[].
+    results = [] # Empty container results
 
     #########
-    pickle_filename = rootDir + 'output/' + year_str + '/' + namestr[:-1]
-    pickle_filename_true = pickle_filename + '_true_' + str(minDuration) + '~' + str(maxDuration) + 'min.p'
-    pickle_filename_false = pickle_filename + '_false_' + str(minDuration) + '~' + str(maxDuration) + 'min.p'
+    pickle_filename = rootDir + 'output/' + namestr[1:] + probe_str + '/'
+    pickle_filename_true  = pickle_filename + 'true_' + key_temp + 'min.p'
+    pickle_filename_false = pickle_filename + 'false_' + key_temp + 'min.p'
 
     print('Save file to: {}'.format(pickle_filename_true))
-    pickle.dump(results_true_tuple_list, open(pickle_filename_true, 'wb'), protocol=2)
+    pickle.dump(results_true_tuple_list, open(pickle_filename_true, 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
     print('Save file to: {}'.format(pickle_filename_false))
-    pickle.dump(results_false_tuple_list, open(pickle_filename_false, 'wb'), protocol=2)
+    pickle.dump(results_false_tuple_list, open(pickle_filename_false, 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
     ##########
 
     endTime = datetime.now()

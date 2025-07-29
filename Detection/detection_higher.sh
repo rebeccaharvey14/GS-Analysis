@@ -1,5 +1,7 @@
 #!/bin/bash
 
+probe_str='_MMS1'
+
 ########### MMS ###########
 time_head='2019-09-27 00:00'
 time_tail='2019-09-27 18:00'
@@ -18,12 +20,13 @@ time_tail='2009-06-08 22:00'
 
 time_head='2020-11-28 13:00'
 time_tail='2020-11-28 17:00'
+namestr='_20201128_20201128'
 
-################### DETECTION ###################
-./343.sh $year $dt $time_head $time_tail $namestr
-./385.sh $year $dt $time_head $time_tail $namestr
-./429.sh $year $dt $time_head $time_tail $namestr
-./488.sh $year $dt $time_head $time_tail $namestr
-./549.sh $year $dt $time_head $time_tail $namestr
-./608.sh $year $dt $time_head $time_tail $namestr
-#################################################
+################### DETECTION ####################
+./343.sh $time_head $time_tail $namestr $probe_str
+./385.sh $time_head $time_tail $namestr $probe_str
+./429.sh $time_head $time_tail $namestr $probe_str
+./488.sh $time_head $time_tail $namestr $probe_str
+./549.sh $time_head $time_tail $namestr $probe_str
+./608.sh $time_head $time_tail $namestr $probe_str
+##################################################

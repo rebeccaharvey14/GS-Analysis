@@ -1,4 +1,2 @@
-#!/bin/sh
-source /opt/asn/etc/asn-bash-profiles-special/modules.sh
-python3 ~/GS-Analysis/Codes/GS_detection.py $1 429 490 63 1 $2 $3 $4 $5 $6
-
+#!/bin/bash
+python3 /home/rharvey/Documents/GS-Analysis/Codes/GS_detection.py $1 $2 $3 $4 429 490 63 1 $5 $6

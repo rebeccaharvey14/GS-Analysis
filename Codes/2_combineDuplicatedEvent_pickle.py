@@ -24,10 +24,8 @@ inputDir  = 'SearchResult/raw_record_list_dict/'
 #############################################################################################################
 
 # Command line argument.
-year_str  = sys.argv[1]
-dt        = float(sys.argv[2]) # seconds
-namestr   = sys.argv[3]
-probe_str = sys.argv[4]
+namestr   = sys.argv[1]
+probe_str = sys.argv[2]
 
 # Read in all data.
 print('Reading data...')
@@ -49,7 +47,7 @@ for key in Data_DataFrame.keys():
 oneYear_dict_fileName = rootDir + inputDir + 'raw_dict' + namestr + probe_str + '.p'
 # shockList_DF = pd.read_pickle(open('/home/rharvey/GS/GS_FluxRopeDetectionPackage/shockList/IPShock_ACE_or_WIND_or_Ulysses_1996_2016_DF.p', 'rb'))
 
-search_result_no_overlap_DF = FR.clean_up_raw_result(DataFrame, oneYear_dict_fileName, min_residue_diff=0.2, min_residue_fit=0.2, walenTest_k_threshold=0.3, output_dir=outputDir, output_filename=name_str[:-1] + probe_str +'_no_overlap', isPrintIntermediateDF=False, isVerbose=True, isRemoveShock=False)
+search_result_no_overlap_DF = FR.clean_up_raw_result(DataFrame, oneYear_dict_fileName, min_residue_diff=0.2, min_residue_fit=0.2, walenTest_k_threshold=0.3, output_dir=outputDir, output_filename=name_str[:-1] + probe_str +'_no_overlap.p', isPrintIntermediateDF=False, isVerbose=True, isRemoveShock=False)
 
 
 
