@@ -90,7 +90,7 @@ for B_lim in B_threshold:
         column = 0
 
     # Generate dataset with all |B| value.
-    inputFileName = namestr[:-1] + probe_str +'_detailed_info.p'
+    inputFileName = namestr[1:] + probe_str +'_detailed_info.p'
     FR_selected_events = pd.read_pickle(open(rootDir + inputListDir + inputFileName,'rb'))
 
     # Apply criteria
@@ -181,22 +181,23 @@ for B_lim in B_threshold:
         # FR_selected_events = FR_selected_events[(FR_selected_events['walenTest_slope']>=0.300) | (FR_selected_events['walenTest_slope']<=-0.300)]
         # FR_selected_events = FR_selected_events[(FR_selected_events['walenTest_r_value']>=0.800) | (FR_selected_events['walenTest_r_value']<=-0.800)]
         
-        # If outputDir does not exist, create it.
-        if not os.path.exists(rootDir + outputDir):
-            os.makedirs(rootDir + outputDir)
-        
-        # Save all events to pickle file.
-        FR_selected_events.to_pickle(rootDir + outputDir + namestr[:-1] + probe_str + B_lim + '_selected_events.p')
-       
+    # If outputDir does not exist, create it.
+    if not os.path.exists(rootDir + outputDir):
+        os.makedirs(rootDir + outputDir)
+    
+    # Save all events to pickle file.
+    FR_selected_events.to_pickle(rootDir + outputDir + namestr[1:] + probe_str + B_lim + '_selected_events.p')
+    
+    if isPlotDaysToExhaust:
         # Pick and save the events after shock.
         FR_selected_events = FR_selected_events[FR_selected_events['afterShock']==True]
         FR_selected_events.reset_index(inplace=True, drop=True)
-        FR_selected_events.to_pickle(rootDir + outputDir + namestr[:-1] + probe_str + B_lim + '_selected_events_afterShock.p')
-    
-        # Save Plot.
-        if isPlot:
-            if not os.path.exists(rootDir + outputPlotDir):
-                os.makedirs(rootDir + outputPlotDir)
-            fig1.savefig(rootDir + outputPlotDir + 'TimeToHCS_' + B_lim + '.eps', format='eps')
-            plt.close('all')
+        FR_selected_events.to_pickle(rootDir + outputDir + namestr[1:] + probe_str + B_lim + '_selected_events_afterShock.p')
+
+    # Save Plot.
+    if isPlot:
+        if not os.path.exists(rootDir + outputPlotDir):
+            os.makedirs(rootDir + outputPlotDir)
+        fig1.savefig(rootDir + outputPlotDir + 'TimeToHCS_' + B_lim + '.eps', format='eps')
+        plt.close('all')
 

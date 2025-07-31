@@ -199,7 +199,6 @@ if not os.path.exists(rootDir + 'output/' + namestr[1:] + probe_str):
 print('Reading data...')
 GS_DataFrame = pd.read_csv(dataDir + 'data' + probe_str + namestr + '.csv', index_col=0)
 dt = np.diff(pd.to_datetime(GS_DataFrame.index))[0] / pd.Timedelta('1s')
-print(dt)
 
 # Check data property.
 print('Checking DataFrame keys... {}'.format(GS_DataFrame.keys()))

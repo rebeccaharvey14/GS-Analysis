@@ -11,7 +11,6 @@ time_tail  = sys.argv[3] + ' ' + sys.argv[4]
 time_range = [time_head,time_tail]
 namestr    = sys.argv[5]
 probe      = sys.argv[6]
-year       = sys.argv[7]
 
 rootDir = '/home/rharvey/Documents/Research/GS-Analysis/'
 dataFile = '/home/rharvey/data/' + 'data_MMS'+ probe + namestr + '.csv'
@@ -19,10 +18,10 @@ dataFile = '/home/rharvey/data/' + 'data_MMS'+ probe + namestr + '.csv'
 datetimeStart = datetime.strptime(time_head,'%Y-%m-%d %H:%M')
 datetimeEnd   = datetime.strptime(time_tail,'%Y-%m-%d %H:%M')
 
-fr_log_bufsize = 1 # 0 means unbuffered, 1 means line buffered.
-fr_log_path_filename = rootDir + 'fr' + namestr + '.log'
-fr_log = open(fr_log_path_filename, 'w', fr_log_bufsize)
-sys.stdout = fr_log
+# fr_log_bufsize = 1 # 0 means unbuffered, 1 means line buffered.
+# fr_log_path_filename = rootDir + 'log/fr' + namestr + '.log'
+# fr_log = open(fr_log_path_filename, 'w', fr_log_bufsize)
+# sys.stdout = fr_log
 
 ######################### FGM measurements #########################
 print('Getting FGM (magnetic field) data...')

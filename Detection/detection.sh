@@ -81,7 +81,7 @@ probe_str='_MMS1'
 # time_tail='2017-10-10 22:00'
 
 time_head='2017-11-05 03:30'
-time_tail='2017-11-05 06:00'
+time_tail='2017-11-05 12:00'
 namestr='_20171105_20171106'
 
 # time_head='2017-11-08 01:30'
@@ -95,8 +95,8 @@ namestr='_20171105_20171106'
 # namestr='_20150910_20150911'
 
 ################### DETECTION ###################
-# ./11.sh $time_head $time_tail $namestr $probe_str
-# ./14.sh $time_head $time_tail $namestr $probe_str
+./11.sh $time_head $time_tail $namestr $probe_str
+./14.sh $time_head $time_tail $namestr $probe_str
 ./20.sh $time_head $time_tail $namestr $probe_str
 ./32.sh $time_head $time_tail $namestr $probe_str
 ./42.sh $time_head $time_tail $namestr $probe_str

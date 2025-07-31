@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 
-rootDir   = '/home/rharvey/GS-Analsis/'
+rootDir   = '/home/rharvey/Documents/GS-Analysis/'
 inputDir  = 'SearchResult/selected_events/'
 
 namestr = sys.argv[1]
@@ -9,10 +9,10 @@ year    = int(namestr[1:4])
 
 # Constructing webpage.
 print('\nCreating webpage...')
-html_filename = hours + namestr + '.html' #'year'+year_str+'.html'
+html_filename = hours + namestr + '.html'
 html_webpage_file = open(rootDir + 'Web/'+ html_filename,'w')
-f = html_webpage_file # html heading.
-f.write('<html>\n')   # python will convert \n to os.linesep
+f = html_webpage_file # html heading
+f.write('<html>\n')
 
 # link on top.
 # f.write('<div style="width:100px; height:100px; position:fixed;">\n')

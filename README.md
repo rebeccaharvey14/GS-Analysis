@@ -9,7 +9,7 @@
 - data_THM.py -- fast survey (when available) plasma & fast survey magnetic field data; slow survey plasma velocity data interpolated + upsampled when fast survey data is unavailable
 
 **detection.sh**
-- GS_detection.pySPEDAS			 -- detection step called by search windows; utilizes extended-GS equation
+- GS_detection.py			 	 -- detection step called by search windows; utilizes extended-GS equation
 - Detection/*.sh 				 -- original detection search windows (from Y. Chen)
 - Detection/detection_higher*.sh -- higher duration search windows (from R. Harvey)
 

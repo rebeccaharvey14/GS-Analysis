@@ -26,8 +26,8 @@ probe_str = sys.argv[2]
 
 # Read in all data.
 print('Reading data...')
-DataFrame = pd.read_csv('/home/rharvey/data/data' + namestr + probe_str '.csv',index_col=0)
+DataFrame = pd.read_csv('/home/rharvey/data/data' + probe_str + namestr + '.csv',index_col=0)
 
 # Get more flux rope information.
-search_result_no_overlap_DF_fileName = rootDir + inputDir + namestr[:-1] + probe_str + '_no_overlap.p'
-search_result_detail_info_DF = FR.get_more_flux_rope_info(DataFrame, search_result_no_overlap_DF_fileName, output_dir=outputDir, output_filename=namestr[:-1] + probe_str+'_detailed_info.p')
+search_result_no_overlap_DF_fileName = rootDir + inputDir + namestr[1:] + probe_str + '_no_overlap.p'
+search_result_detail_info_DF = FR.get_more_flux_rope_info(DataFrame, search_result_no_overlap_DF_fileName, output_dir=outputDir, output_filename=namestr[1:] + probe_str + '_detailed_info.p')

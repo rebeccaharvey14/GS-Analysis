@@ -29,7 +29,7 @@ probe_str = sys.argv[2]
 
 # Read in all data.
 print('Reading data...')
-DataFrame = pd.read_csv('/home/rharvey/data/data' + namestr + probe_str '.csv',index_col=0)
+DataFrame = pd.read_csv('/home/rharvey/data/data' + probe_str + namestr + '.csv',index_col=0)
 
 # Check the NaNs in each variable.
 print('Checking DataFrame keys... {}'.format(DataFrame.keys()))
@@ -38,7 +38,7 @@ print('Data Time start: {}'.format(DataFrame.index[0]))
 print('Data Time end: {}'.format(DataFrame.index[-1]))
 print('Checking the number of NaNs in DataFrame...')
 len_DataFrame = len(DataFrame)
-for key in Data_DataFrame.keys():
+for key in DataFrame.keys():
     num_notNaN = DataFrame[key].isnull().values.sum()
     percent_notNaN = 100.0 - num_notNaN * 100.0 / len_DataFrame
     print('The number of NaNs in {} is {}, integrity is {}%'.format(key, num_notNaN, round(percent_notNaN, 2)))
@@ -47,7 +47,7 @@ for key in Data_DataFrame.keys():
 oneYear_dict_fileName = rootDir + inputDir + 'raw_dict' + namestr + probe_str + '.p'
 # shockList_DF = pd.read_pickle(open('/home/rharvey/GS/GS_FluxRopeDetectionPackage/shockList/IPShock_ACE_or_WIND_or_Ulysses_1996_2016_DF.p', 'rb'))
 
-search_result_no_overlap_DF = FR.clean_up_raw_result(DataFrame, oneYear_dict_fileName, min_residue_diff=0.2, min_residue_fit=0.2, walenTest_k_threshold=0.3, output_dir=outputDir, output_filename=name_str[:-1] + probe_str +'_no_overlap.p', isPrintIntermediateDF=False, isVerbose=True, isRemoveShock=False)
+search_result_no_overlap_DF = FR.clean_up_raw_result(DataFrame, oneYear_dict_fileName, min_residue_diff=0.2, min_residue_fit=0.2, walenTest_k_threshold=0.3, output_dir=outputDir, output_filename=namestr[1:] + probe_str +'_no_overlap.p', isPrintIntermediateDF=False, isVerbose=False, isRemoveShock=False)
 
 
 

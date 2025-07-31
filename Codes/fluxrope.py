@@ -549,7 +549,9 @@ def clean_up_raw_result(data_DF, dataObject_or_dataPath, **kwargs):
         return None
 
     # Set default values.
-    dt = float(sys.argv[3])     # seconds
+    namestr = sys.argv[1]
+    probe_str = sys.argv[2]
+    dt = np.diff(pd.to_datetime(data_DF.index))[0] / pd.Timedelta('1s') # seconds
     turnTime_tolerance  = 5*dt  # seconds
     min_residue_diff    = 0.2
     min_residue_fit     = 0.2
@@ -571,7 +573,7 @@ def clean_up_raw_result(data_DF, dataObject_or_dataPath, **kwargs):
     # Display control.
     isVerbose = False
     isPrintIntermediateDF = True
-    output_filename = 'search_result_no_overlap' + namestr
+    output_filename = namestr[1:] + probe_str +'_no_overlap'
     output_dir = os.getcwd()
     
     # If keyword is specified, overwrite the default value.
@@ -703,9 +705,9 @@ def clean_up_raw_result(data_DF, dataObject_or_dataPath, **kwargs):
         # Create headers.
         eventList_temp_Header = ['startTime', 'turnTime', 'endTime', 'duration', 'topTurn', 'residue_diff', 'residue_fit', 'theta_phi', 'VHT']
         eventList_0_original_temp              = pd.DataFrame(eventList_temp, columns=eventList_temp_Header)
-        eventList_0_original_temp['startTime'] = pd.to_datetime(eventList_0_original_temp['startTime'], format="%Y%m%d%H%M%S")
-        eventList_0_original_temp['turnTime']  = pd.to_datetime(eventList_0_original_temp['turnTime'], format="%Y%m%d%H%M%S")
-        eventList_0_original_temp['endTime']   = pd.to_datetime(eventList_0_original_temp['endTime'], format="%Y%m%d%H%M%S")
+        eventList_0_original_temp['startTime'] = pd.to_datetime(eventList_0_original_temp['startTime'], format="%Y-%m-%d %H:%M:%S.%f")
+        eventList_0_original_temp['turnTime']  = pd.to_datetime(eventList_0_original_temp['turnTime'], format="%Y-%m-%d %H:%M:%S.%f")
+        eventList_0_original_temp['endTime']   = pd.to_datetime(eventList_0_original_temp['endTime'], format="%Y-%m-%d %H:%M:%S.%f")
         
         # Find all records from eventList_0_original_temp that fit the slots of slotList_temp.
         print('\nFitting the events into available slots...')
@@ -736,7 +738,7 @@ def clean_up_raw_result(data_DF, dataObject_or_dataPath, **kwargs):
             print('Before combining, total records is {}.'.format(len(eventList_1_fineResidue_temp)))
         
         eventList_1_fineResidue_temp = eventList_1_fineResidue_temp.sort_values(by='turnTime') # Sort by turnTime.
-        index_max_duration_inGrouped    = eventList_1_fineResidue_temp.groupby(['turnTime'], sort=False)['duration'].transform(max) == eventList_1_fineResidue_temp['duration'] # Group by turnTime.
+        index_max_duration_inGrouped = eventList_1_fineResidue_temp.groupby(['turnTime'], sort=False)['duration'].transform(max) == eventList_1_fineResidue_temp['duration'] # Group by turnTime.
         
         # Pick the event with max duration among the events sharing same turnPoint.
         eventList_2_combinedByTurnTime_temp = eventList_1_fineResidue_temp[index_max_duration_inGrouped]
@@ -767,9 +769,10 @@ def clean_up_raw_result(data_DF, dataObject_or_dataPath, **kwargs):
                 print('Walen test: checking duration {} minutes, {}/{}...'.format(duration_str_temp, index+1, len_eventList_4_before))
             theta_deg, phi_deg = FR_record['theta_phi']
             VHT_inGSE = np.array(FR_record['VHT'])
+            data_DF.index = pd.to_datetime(data_DF.index)
             
             # Grab the data for one fluxrope candidate.
-            selectedRange_mask = (data_DF.index >= FR_record['startTime']) & (data_DF.index <= FR_record['endTime'])
+            selectedRange_mask = (data_DF.index >= FR_record['startTime'].to_pydatetime()) & (data_DF.index <= FR_record['endTime'].to_pydatetime())
             FR_record_data     = data_DF.iloc[selectedRange_mask]
 
             # Interpolate FR_record_data if there is any NaNs in any column.
@@ -1000,8 +1003,8 @@ def clean_up_raw_result(data_DF, dataObject_or_dataPath, **kwargs):
         print('Done.')
 
     # Save DataFrame to output file.
-    print('\nSaving eventList_noOverlap to {output_filename}')
-    eventList_noOverlap.to_csv(output_dir + output_filename)
+    print(f'\nSaving eventList_noOverlap to {output_filename}')
+    eventList_noOverlap.to_pickle(output_dir + output_filename, protocol=pickle.HIGHEST_PROTOCOL)
     print('Done.')
 
     return eventList_noOverlap
@@ -1030,7 +1033,7 @@ def get_more_flux_rope_info(data_DF, dataObject_or_dataPath, **kwargs):
     if 'output_filename' in kwargs:
         output_filename = kwargs['output_filename']
     else:
-        output_filename = namestr[:-1] + probe_str + '_detailed_info.p'
+        output_filename = namestr[1:] + probe_str + '_detailed_info.p'
     
     if 'isVerbose' in kwargs:
         isVerbose = kwargs['isVerbose']
@@ -1039,7 +1042,7 @@ def get_more_flux_rope_info(data_DF, dataObject_or_dataPath, **kwargs):
         
     print('output_dir            = {}.'.format(output_dir))
     print('output_filename       = {}.'.format(output_filename))
-    print('isVerbose is set to {}'.format())
+    print('isVerbose is set to {}'.format(isVerbose))
 
     # Create an empty dataframe.
     eventList_DF_detailedInfo = pd.DataFrame(columns=['startTime', 'turnTime', 'endTime', \
@@ -1088,22 +1091,21 @@ def get_more_flux_rope_info(data_DF, dataObject_or_dataPath, **kwargs):
             print('residue_fit = {}'.format(residue_fit))
                     
         # Grab data in specific range of fluxrope candidate.
+        data_DF.index = pd.to_datetime(data_DF.index)
         selectedRange_mask = (data_DF.index >= startTime) & (data_DF.index <= endTime)
         data_oneFR_DF = data_DF.iloc[selectedRange_mask]
         if selectedRange_mask.sum() <=1:
             continue
-        dt = float(sys.argv[3]) # seconds.
         
         # Get slice of data.
         B_inGSE   = data_oneFR_DF.loc[:,['Bx', 'By', 'Bz']] # [nT]
         Vsw_inGSE = data_oneFR_DF.loc[:,['Vx', 'Vy', 'Vz']] # [km/s]
-        Np        = data_oneFR_DF.loc[:,['Np']] # [cm^-3]
-        Tp        = data_oneFR_DF.loc[:,['Tp']] # [K]
+        Np        = data_oneFR_DF.loc[:,['Np']]             # [cm^-3]
+        Tp        = data_oneFR_DF.loc[:,['Tp']]             # [K]
 
-        # RD = data_oneFR_DF.ix[:,['RD']]
-        # Na = data_oneFR_DF.ix[:,['N_alpha']]
+        # RD = data_oneFR_DF.loc[:,['RD']]
+        # Na = data_oneFR_DF.loc[:,['N_alpha']]
         # Alpha2Proton_ratio = data_oneFR_DF.loc[:,['Alpha2Proton_ratio']]
-        # Alpha2Proton_ratio =  data_oneFR_DF.ix[:,['Alpha2Proton_ratio']]
 
         if 'Te' in data_oneFR_DF.keys():
             Te = data_oneFR_DF.loc[:,['Te']] # [K]
@@ -1212,7 +1214,8 @@ def get_more_flux_rope_info(data_DF, dataObject_or_dataPath, **kwargs):
         VA_inFR    = np.array(B_inFR * 1e-9) / np.sqrt(mu0 * P_massDensity_array) / 1000.0
         VA_inFR_1D = np.reshape(VA_inFR, VA_inFR.size)
 
-        size = - VHT_inFR[0] * 1000.0 * duration * 60.0 # Space increment along X axis. Convert km/s to m/s.
+        dt = np.diff(pd.to_datetime(data_DF.index))[0] / pd.Timedelta('1s') # seconds
+        size = - VHT_inFR[0] * 1000.0 * duration * dt # Space increment along X axis. Convert km/s to m/s.
         AU = 149597870700
         size_inAU = size/AU
 
@@ -1318,15 +1321,15 @@ def get_more_flux_rope_info(data_DF, dataObject_or_dataPath, **kwargs):
         Vsw_norm_DF  = pd.DataFrame(np.sqrt(np.square(Vsw_inGSE).sum(axis=1)),columns=['|Vsw|'])
         Vsw_magnitude_mean = Vsw_norm_DF['|Vsw|'].mean(skipna=True)    
         VA_mean = np.mean(np.sqrt(np.square(VA_inFR).sum(axis=1)))
-        RD_mean = np.mean(np.array(RD['RD']))
-        NaNp_mean = np.mean(np.array(Na['N_alpha'])/np.array(Np['Np']))
+        # RD_mean = np.mean(np.array(RD['RD']))
+        # NaNp_mean = np.mean(np.array(Na['N_alpha'])/np.array(Np['Np']))
         
         # Get Plasma Beta statistical properties.
         Tp_mean = np.mean(np.ma.masked_invalid(np.array(Tp['Tp'])))/1e6 # Convert unit to 10^6K.
         Tp_mean = round(Tp_mean, 6)
         Np_mean = float(Np.mean(skipna=True, numeric_only=True)) # [#/cc]
-        Alpha2Proton_ratio_mean = float(Alpha2Proton_ratio.mean(skipna=True, numeric_only=True))
-        Alpha2Proton_ratio_mean = np.mean(np.ma.masked_invalid(np.array(Alpha2Proton_ratio['Alpha2Proton_ratio'])))
+        # Alpha2Proton_ratio_mean = float(Alpha2Proton_ratio.mean(skipna=True, numeric_only=True))
+        # Alpha2Proton_ratio_mean = np.mean(np.ma.masked_invalid(np.array(Alpha2Proton_ratio['Alpha2Proton_ratio'])))
         
         # Calculate Te_mean. Convert unit to 10^6K.
         if 'Te' in data_oneFR_DF.keys():
@@ -1388,7 +1391,7 @@ def get_more_flux_rope_info(data_DF, dataObject_or_dataPath, **kwargs):
         'VreigenVectorInterVar_lambda2[0]':VreigenVectorInterVar_lambda2[0], 'VreigenVectorInterVar_lambda2[1]':VreigenVectorInterVar_lambda2[1], \
         'VreigenVectorInterVar_lambda2[2]':VreigenVectorInterVar_lambda2[2], 'VreigenVectorMinVar_lambda3[0]':VreigenVectorMinVar_lambda3[0], \
         'VreigenVectorMinVar_lambda3[1]':VreigenVectorMinVar_lambda3[1], 'VreigenVectorMinVar_lambda3[2]':VreigenVectorMinVar_lambda3[2],\
-        'RD_mean':RD_mean,'NaNp_mean':NaNp_mean, 'Alpha2Proton_ratio_mean':Alpha2Proton_ratio_mean, \
+#        'RD_mean':RD_mean,'NaNp_mean':NaNp_mean, 'Alpha2Proton_ratio_mean':Alpha2Proton_ratio_mean, \
         'Jzmax':Jzmax,'VA_mean':VA_mean,'Cross_heli':Cross_heli,\
         'Br_mean':Br_mean,'Bt_mean':Bt_mean,'Bn_mean':Bn_mean,'Residue_energy':Residue_energy,'Am':Am}
 

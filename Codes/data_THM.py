@@ -11,7 +11,6 @@ time_tail  = sys.argv[3] + ' ' + sys.argv[4]
 time_range = [time_head,time_tail]
 namestr    = sys.argv[5]
 probe      = sys.argv[6]
-year       = sys.argv[7]
 
 rootDir  = '/home/rharvey/Documents/Research/GS-Analysis/'
 dataFile = '/home/rharvey/data/' + 'data_THM'+ probe.upper() + namestr + '.csv'
