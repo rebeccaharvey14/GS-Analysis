@@ -22,9 +22,10 @@
 - 5_generate_csv.py 		  -- produces csv of event list and associated parameters; runs concurrently with 5_generate_html.py
 - 5_generate_html.py 		  -- puts everything in web html format; runs concurrently with 5_generate_csv.py
 - 6_plotFluxRopeCandidate.py  -- plots time series and hodograms of flux rope events
-- 7_event_page_html.py 		  --
-- output_jz.py 				  -- outputs histogram of axial current density *j~z*
-- curve_fit_Jz_B_5nT.py       --
+
+<!-- - 7_event_page_html.py ---->
+<!-- - output_jz.py -- outputs histogram of axial current density *j~z* -->
+<!--- - curve_fit_Jz_B_5nT.py ---->
 
 **fluxrope.py**
 *R. Harvey's version of fluxrope.py modified for magnetosheath data*
